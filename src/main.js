@@ -3,7 +3,6 @@ import {Camera} from './camera.js'
 import {Scene} from './scene.js'
 import {Sphere} from './sphere.js'
 import {Screen} from './screen.js'
-import {Item} from './item.js'
 import {colors} from './color.js'
 
 $(() => {
@@ -15,8 +14,8 @@ $(() => {
   })
 
   const items = [
-    Item(Sphere(Vector(0, 0, 0), 1), colors.red),
-    Item(Sphere(Vector(2, -1, 0), 1), colors.blue)
+    Sphere(Vector(0, 0, 0), 1, colors.red),
+    Sphere(Vector(2, -1, 0), 1, colors.blue)
   ]
 
   const width = 64 * 4
@@ -27,7 +26,7 @@ $(() => {
     resolution: [width, height],
     items,
     ambient: colors.red,
-    iluminators: []
+    illuminators: []
   })
 
   const canvas = $("#screen")[0]

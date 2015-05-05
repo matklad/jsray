@@ -4,13 +4,13 @@ export const Scene = ({camera,
                        resolution,
                        items,
                        ambient,
-                       iluminators,
+                       illuminators,
                        background_color=colors.black}) => {
     const _find_intersection = (ray) => {
       let min_t = -1
       let min_item = null
       const f = (acc, item) => {
-        const t = item.shape.intersect(ray)
+        const t = item.intersect(ray)
         if (t != -1 && (acc.t == -1 || t < acc.t)) {
           return {t, item}
         }
@@ -20,7 +20,7 @@ export const Scene = ({camera,
       return items.reduce(f, {t: -1, item:null})
     }
 
-    const _item_lighted_at = (item, pos) => item.color.under_light(ambient)
+    const _item_lighted_at = (item, pos) => item.color_at(pos).under_light(ambient)
 
   return {
     resolution: resolution,
