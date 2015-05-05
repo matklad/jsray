@@ -22,7 +22,7 @@ export const Scene = ({camera,
       let min_item = null
       const f = (acc, item) => {
         const t = item.shape.intersect(ray)
-        if (t != -1 && (acc.t == -1 || acc.t < t)) {
+        if (t != -1 && (acc.t == -1 || t < acc.t)) {
           return {t, item}
         }
         return acc
