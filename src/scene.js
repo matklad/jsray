@@ -8,7 +8,7 @@ export const Scene = ({camera,
       let min_t = -1
       let min_item = null
       const f = (acc, item) => {
-        const t = item.shape.intersect(ray)
+        const t = item.intersect(ray)
         if (t != -1 && (acc.t == -1 || t < acc.t)) {
           return {t, item}
         }
@@ -28,7 +28,7 @@ export const Scene = ({camera,
 
       const ray = camera.cast_ray(dx, dy)
       const item = _find_intersection(ray)
-      return item ? item.color : background_color
+      return item ? item.color_at(null) : background_color
     }
 
   }

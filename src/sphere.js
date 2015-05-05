@@ -2,7 +2,7 @@ import {Vector} from "./vector.js"
 import {Ray, ray_from_to} from "./ray.js"
 import {solve_square_equation} from "./utils.js"
 
-export const Sphere = (center, radius) => {return {
+export const Sphere = (center, radius, color) => {return {
   center: center,
   radius: radius,
 
@@ -27,14 +27,18 @@ export const Sphere = (center, radius) => {return {
 
   normal_at: (point) => {
     return point.sub(center).direction()
-  }
+  },
+
+  color_at: (point) => color
 }}
+
 
 const test_normal_at = () => {
   const s = Sphere(Vector(0, 0, 0), 1)
   console.log(s.normal_at(Vector(1, 0, 0)))
 }
-test_normal_at()
+// test_normal_at()
+
 
 const test = () => {
   const origin = Vector(0, 0, 0)
@@ -44,4 +48,4 @@ const test = () => {
   const r = ray_from_to(p, origin)
   console.log(s.intersect(r))
 }
-test()
+// test()
