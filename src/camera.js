@@ -17,8 +17,8 @@ export const Camera = (
   return {
     // x, y from -1 to 1
     cast_ray: (x, y) => {
-      const dx = x * screen_width
-      const dy = y * screen_height
+      const dx = x * screen_width / 2
+      const dy = y * screen_height / 2
       const point_on_screen = center
               .add(right.scale(dx))
               .add(up.scale(dy))
