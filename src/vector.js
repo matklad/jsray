@@ -17,7 +17,7 @@ export const Vector = (x, y, z) => {
       const {x: a, y: b, z: c} = rhs
       // x y z
       // a b c
-      return Vector(y*c - z*b, z*z - x*c, x*b - y*a)
+      return Vector(y*c - z*b, z*a - x*c, x*b - y*a)
     },
 
     length: () => Math.sqrt(x*x + y*y + z*z),
