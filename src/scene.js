@@ -1,4 +1,5 @@
 import {colors} from './color.js'
+import {Ray} from './ray.js'
 
 export const Scene = ({camera,
                        resolution,
@@ -20,7 +21,17 @@ export const Scene = ({camera,
       return items.reduce(f, {t: -1, item:null})
     }
 
-    const _item_lighted_at = (item, pos) => item.color_at(pos).under_light(ambient)
+    const _item_lighted_at = (item, pos) => {
+      const f = (color, illuminator) => {
+        const dir = (illuminator.origin.sub(pos)).direction()
+        if (!_find_intersection(Ray(pos, dir)).item) {
+          return color.mix_with(illuminator.color.set_bright(item.normal_at(pos).dot(dir)))
+        }
+        return color
+      }
+      const init_color = item.color_at(pos).under_light(ambient)
+      return illuminators.reduce(f, init_color)
+    }
 
   return {
     resolution: resolution,

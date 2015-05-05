@@ -24,7 +24,7 @@ $(() => {
   ]
 
   const illuminators = [
-    Illuminator(Vector(-1, -2, -2), colors.white.set_bright(0.5)),
+    Illuminator(Vector(1, -2, 2), colors.white.set_bright(0.5)),
     Illuminator(Vector(1,  2,  2), colors.green.set_bright(0.5))
   ]
 
@@ -35,7 +35,7 @@ $(() => {
     camera,
     resolution: [width, height],
     items,
-    ambient: colors.white.set_bright(0.3),
+    ambient: colors.white.set_bright(0.4),
     illuminators
   })
 
