@@ -13,7 +13,7 @@ $(() => {
     screen: [6.4, 4.8]
   })
 
-  const objects = [
+  const items = [
     Item(Sphere(Vector(0, 0, 0), 1), colors.red)
   ]
 
@@ -23,7 +23,7 @@ $(() => {
   const scene = Scene({
     camera,
     resolution: [width, height],
-    objects
+    items
   })
 
   const canvas = $("#screen")[0]

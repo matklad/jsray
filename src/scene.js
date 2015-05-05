@@ -2,9 +2,9 @@ import {colors} from './color.js'
 
 export const Scene = ({camera,
                        resolution,
-                       objects,
+                       items,
                        background_color=colors.black}) => {
-  return {
+  self = {
     resolution: resolution,
 
     color_at: (x, y) => {
@@ -12,13 +12,25 @@ export const Scene = ({camera,
       const dx = (2 * x - res_x) / res_x
       const dy = (2 * y - res_y) / res_y
 
-      const r = camera.cast_ray(dx, dy)
-      const o = objects[0]
-      if (o.shape.intersect(r) == -1) {
-        return background_color
-      } else {
-        return o.color
+      const ray = camera.cast_ray(dx, dy)
+      const item = self._find_intersection(ray)
+      return item ? item.color : background_color
+    },
+
+    _find_intersection: (ray) => {
+      let min_t = -1
+      let min_item = null
+      const f = (acc, item) => {
+        const t = item.shape.intersect(ray)
+        if (t != -1 && (acc.t == -1 || acc.t < t)) {
+          return {t, item}
+        }
+        return acc
       }
+
+      return items.reduce(f, {t: -1, item:null}).item
     }
   }
+
+  return self
 }
