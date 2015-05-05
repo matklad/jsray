@@ -8,8 +8,7 @@ export const Screen = (canvas, resolution) => {
     ctx: ctx,
     resolution: resolution,
     put_pixel: (x, y, color) => {
-      const [r, g, b] = color
-      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + 1 +")"
+      ctx.fillStyle = color.as_rgba_str()
       ctx.fillRect(x, y, 1, 1)
     },
     update: () => {
