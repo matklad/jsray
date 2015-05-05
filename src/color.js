@@ -3,13 +3,17 @@ export const Color = (r, g, b) => {return {
   g: g,
   b: b,
   as_rgba_str: () => {
-    const f = (alpha) => Math.round(alpha * 255)
+    const f = (alpha) => Math.min(Math.round((alpha * 255)), 255)
     return "rgba(" + f(r) + "," + f(g) + "," + f(b) + "," + 255 +")"
   },
 
   under_light: (light) => {
     return Color(r * light.r, g * light.g, b * light.b)
-  }
+  },
+
+  mix_with: (other) => Color(r + other.r, g + other.g, b + other.b),
+
+  set_bright: (bright) => Color(r * bright, g * bright, b * bright)
 }}
 
 
