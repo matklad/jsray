@@ -1,34 +1,38 @@
-export const Vector = (x, y, z) => {return {
-  x: x,
-  y: y,
-  z: z,
+export const Vector = (x, y, z) => {
+  const self = {
+    x: x,
+    y: y,
+    z: z,
 
-  add: (rhs) =>
-    Vector(x + rhs.x, y + rhs.y, z + rhs.z),
+    add: (rhs) =>
+      Vector(x + rhs.x, y + rhs.y, z + rhs.z),
 
-  sub: (rhs) =>
-    Vector(x - rhs.x, y - rhs.y, z - rhs.z),
+    sub: (rhs) =>
+      Vector(x - rhs.x, y - rhs.y, z - rhs.z),
 
-  dot: (rhs) =>
-    x*rhs.x + y*rhs.y + z*rhs.z,
+    dot: (rhs) =>
+      x*rhs.x + y*rhs.y + z*rhs.z,
 
-  cross: (rhs) => {
-    const {x: a, y: b, z: c} = rhs
-    // x y z
-    // a b c
-    return Vector(y*c - z*b, z*z - x*c, x*b - y*a)
-  },
+    cross: (rhs) => {
+      const {x: a, y: b, z: c} = rhs
+      // x y z
+      // a b c
+      return Vector(y*c - z*b, z*z - x*c, x*b - y*a)
+    },
 
-  length: () => Math.sqrt(x*x + y*y + z*z),
+    length: () => Math.sqrt(x*x + y*y + z*z),
 
-  scale: (alpha) =>
-    Vector(x * alpha, y * alpha, z * alpha)
-}}
+    direction: () => {
+      const l = self.length()
+      return Vector(x / l, y / l, z / l)
+    },
 
+    scale: (alpha) =>
+      Vector(x * alpha, y * alpha, z * alpha)
+  }
 
-export const from_to = (start, finish) => {
-  const d = finish.sub(start)
-  const l = d.length()
-
-  return Vector(d.x / l, d.y / l, d.z / l)
+  return self
 }
+
+export const direction_from_to = (start, finish) =>
+  finish.sub(start).direction()
