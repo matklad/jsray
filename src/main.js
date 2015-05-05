@@ -2,6 +2,7 @@ import {Vector} from './vector.js'
 import {Camera} from './camera.js'
 import {Scene} from './scene.js'
 import {Sphere} from './sphere.js'
+import {Screen} from './screen.js'
 
 $(() => {
 
@@ -23,20 +24,17 @@ $(() => {
   })
 
   const canvas = $("#screen")[0]
-  canvas.width = width
-  canvas.height = height
+  const screen = Screen(canvas, [width, height])
 
-  const ctx = canvas.getContext("2d")
-  ctx.fillRect(0, 0, width, height)
-
+  const start_time = performance.now();
   console.log("Start rendering...")
   for (let x = 0; x < scene.resolution[0]; x++) {
     for (let y = 0; y < scene.resolution[1]; y++) {
-      const [r, g, b] = scene.color_at(x, y);
-      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + 1 +")"
-      ctx.fillRect(x, y, 1, 1)
+      screen.put_pixel(x, y, scene.color_at(x, y))
     }
   }
+  screen.update()
   console.log("...done!")
-
+  const end_time = performance.now();
+  console.log('It took ' + (end_time - start_time) + ' ms.');
 })
