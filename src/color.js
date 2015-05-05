@@ -5,6 +5,10 @@ export const Color = (r, g, b) => {return {
   as_rgba_str: () => {
     const f = (alpha) => Math.round(alpha * 255)
     return "rgba(" + f(r) + "," + f(g) + "," + f(b) + "," + 255 +")"
+  },
+
+  under_light: (light) => {
+    return Color(r * light.r, g * light.g, b * light.b)
   }
 }}
 

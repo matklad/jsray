@@ -3,6 +3,8 @@ import {colors} from './color.js'
 export const Scene = ({camera,
                        resolution,
                        items,
+                       ambient,
+                       iluminators,
                        background_color=colors.black}) => {
     const _find_intersection = (ray) => {
       let min_t = -1
@@ -15,8 +17,10 @@ export const Scene = ({camera,
         return acc
       }
 
-      return items.reduce(f, {t: -1, item:null}).item
+      return items.reduce(f, {t: -1, item:null})
     }
+
+    const _item_lighted_at = (item, pos) => item.color.under_light(ambient)
 
   return {
     resolution: resolution,
@@ -27,11 +31,9 @@ export const Scene = ({camera,
       const dy = (2 * y - res_y) / res_y
 
       const ray = camera.cast_ray(dx, dy)
-      const item = _find_intersection(ray)
-      return item ? item.color : background_color
+      const {t, item} = _find_intersection(ray)
+      return item ? _item_lighted_at(item, ray.point_along(t)) : background_color
     }
 
   }
-
-  return self
 }

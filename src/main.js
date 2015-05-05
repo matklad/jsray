@@ -25,7 +25,9 @@ $(() => {
   const scene = Scene({
     camera,
     resolution: [width, height],
-    items
+    items,
+    ambient: colors.red,
+    iluminators: []
   })
 
   const canvas = $("#screen")[0]
