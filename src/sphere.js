@@ -1,4 +1,6 @@
 import {Ray} from "./ray.js"
+import {Vector} from "./vector.js"
+
 import {solve_square_equation} from "./utils.js"
 
 export const Sphere = (center, radius) => {return {
@@ -24,5 +26,15 @@ export const Sphere = (center, radius) => {return {
     }
   },
 
-  normal_at: (point) => Vector(92, 92, 92)
+  normal_at: (point) => {
+    const n = point.sub(center)
+    return n.scale(1 / n.length())
+  }
 }}
+
+const test_normal_at = () => {
+  const s = Sphere(Vector(0, 0, 0), 1)
+  console.log(s.normal_at(Vector(1, 0, 0)))
+}
+
+test_normal_at()
