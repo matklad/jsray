@@ -1,3 +1,5 @@
+import {colors} from './color.js'
+
 export const Scene = ({camera,
                        resolution,
                        objects}) => {
@@ -12,9 +14,9 @@ export const Scene = ({camera,
       const r = camera.cast_ray(dx, dy)
       const o = objects[0]
       if (o.intersect(r) == -1) {
-        return [0, 0, 0]
+        return colors.black
       } else {
-        return [255, 255, 255]
+        return colors.blue
       }
     }
   }

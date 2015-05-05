@@ -32,8 +32,8 @@ $(() => {
   console.log("Start rendering...")
   for (let x = 0; x < scene.resolution[0]; x++) {
     for (let y = 0; y < scene.resolution[1]; y++) {
-      const [r, g, b] = scene.color_at(x, y);
-      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + 1 +")"
+      const c = scene.color_at(x, y)
+      ctx.fillStyle = c.as_rgba_str()
       ctx.fillRect(x, y, 1, 1)
     }
   }
