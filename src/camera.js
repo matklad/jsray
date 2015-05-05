@@ -4,7 +4,7 @@ import {ray_from_to} from './ray.js'
 export const Camera = (
   {origin,
    look_at=Vector(0, 0, 0),
-   up: pre_up=Vector(0, 0, 1),
+   up: pre_up=Vector(0, 0, -1),
    focus,
    screen}
 ) => {
