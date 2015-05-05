@@ -33,7 +33,9 @@ $(() => {
     illuminators: []
   })
 
-  const canvas = $("#screen")[0]
+  const canvas = $("#screen")
+  canvas.attr({width, height})
+
   const screen = Screen(canvas, [width, height])
 
   const start_time = performance.now();
