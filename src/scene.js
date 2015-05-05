@@ -2,7 +2,8 @@ import {colors} from './color.js'
 
 export const Scene = ({camera,
                        resolution,
-                       objects}) => {
+                       objects,
+                       background_color=colors.black}) => {
   return {
     resolution: resolution,
 
@@ -13,10 +14,10 @@ export const Scene = ({camera,
 
       const r = camera.cast_ray(dx, dy)
       const o = objects[0]
-      if (o.intersect(r) == -1) {
-        return colors.black
+      if (o.shape.intersect(r) == -1) {
+        return background_color
       } else {
-        return colors.blue
+        return o.color
       }
     }
   }

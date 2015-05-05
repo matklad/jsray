@@ -2,6 +2,8 @@ import {Vector} from './vector.js'
 import {Camera} from './camera.js'
 import {Scene} from './scene.js'
 import {Sphere} from './sphere.js'
+import {Item} from './item.js'
+import {colors} from './color.js'
 
 $(() => {
 
@@ -11,7 +13,9 @@ $(() => {
     screen: [6.4, 4.8]
   })
 
-  const objects = [Sphere(Vector(0, 0, 0), 1)]
+  const objects = [
+    Item(Sphere(Vector(0, 0, 0), 1), colors.red)
+  ]
 
   const width = 64 * 4
   const height = 48 * 4
