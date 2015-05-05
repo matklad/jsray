@@ -15,7 +15,8 @@ $(() => {
   })
 
   const items = [
-    Item(Sphere(Vector(0, 0, 0), 1), colors.red)
+    Item(Sphere(Vector(0, 0, 0), 1), colors.red),
+    Item(Sphere(Vector(2, -1, 0), 1), colors.blue)
   ]
 
   const width = 64 * 4

@@ -23,8 +23,7 @@ export const Vector = (x, y, z) => {
     length: () => Math.sqrt(x*x + y*y + z*z),
 
     direction: () => {
-      const l = self.length()
-      return Vector(x / l, y / l, z / l)
+      return self.scale(1 / self.length())
     },
 
     scale: (alpha) =>
