@@ -2,6 +2,7 @@ import {Vector} from './vector.js'
 import {Camera} from './camera.js'
 import {Scene} from './scene.js'
 import {Sphere} from './sphere.js'
+import {Plain} from './plain.js'
 import {Screen} from './screen.js'
 import {Illuminator} from './illuminator.js'
 import {colors} from './color.js'
@@ -9,14 +10,17 @@ import {colors} from './color.js'
 $(() => {
 
   const camera = Camera({
-    origin: Vector(10, 0, 0),
+    origin: Vector(10, 0, 1.5),
+    look_at: Vector(0, 0, 1.5),
     focus: 5,
     screen: [6.4, 4.8]
   })
 
   const items = [
-    Sphere(Vector(0,  0, 0), 1, colors.red),
-    Sphere(Vector(0,  1, 0), 1, colors.blue)
+    Sphere(Vector(0, 0, 1), 1, colors.red),
+    Sphere(Vector(2, -1, 1), 1, colors.blue),
+    Plain(Vector(0, 0, 0), Vector(0, 1, 0), Vector(1, 0, 0),
+          colors.blue, colors.white)
   ]
 
   const illuminators = [
@@ -35,7 +39,9 @@ $(() => {
     illuminators
   })
 
-  const canvas = $("#screen")[0]
+  const canvas = $("#screen")
+  canvas.attr({width, height})
+
   const screen = Screen(canvas, [width, height])
 
   const start_time = performance.now();
