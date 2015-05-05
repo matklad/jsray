@@ -19,6 +19,16 @@ export const Vector = (x, y, z) => {return {
     return Vector(y*c - z*b, z*z - x*c, x*b - y*a)
   },
 
+  length: () => Math.sqrt(x*x + y*y + z*z),
+
   scale: (alpha) =>
     Vector(x * alpha, y * alpha, z * alpha)
 }}
+
+
+export const from_to = (start, finish) => {
+  const d = finish.sub(start)
+  const l = d.length()
+
+  return Vector(d.x / l, d.y / l, d.z / l)
+}
