@@ -26,8 +26,7 @@ export const Sphere = (center, radius) => {return {
   },
 
   normal_at: (point) => {
-    const n = point.sub(center)
-    return n.scale(1 / n.length())
+    return point.sub(center).direction()
   }
 }}
 

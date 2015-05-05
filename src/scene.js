@@ -4,20 +4,7 @@ export const Scene = ({camera,
                        resolution,
                        items,
                        background_color=colors.black}) => {
-  self = {
-    resolution: resolution,
-
-    color_at: (x, y) => {
-      const [res_x, res_y] = resolution
-      const dx = (2 * x - res_x) / res_x
-      const dy = (2 * y - res_y) / res_y
-
-      const ray = camera.cast_ray(dx, dy)
-      const item = self._find_intersection(ray)
-      return item ? item.color : background_color
-    },
-
-    _find_intersection: (ray) => {
+    const _find_intersection = (ray) => {
       let min_t = -1
       let min_item = null
       const f = (acc, item) => {
@@ -30,6 +17,20 @@ export const Scene = ({camera,
 
       return items.reduce(f, {t: -1, item:null}).item
     }
+
+  return {
+    resolution: resolution,
+
+    color_at: (x, y) => {
+      const [res_x, res_y] = resolution
+      const dx = (2 * x - res_x) / res_x
+      const dy = (2 * y - res_y) / res_y
+
+      const ray = camera.cast_ray(dx, dy)
+      const item = _find_intersection(ray)
+      return item ? item.color : background_color
+    }
+
   }
 
   return self
