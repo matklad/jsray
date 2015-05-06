@@ -8,14 +8,7 @@ import {Camera} from './camera.js'
 import {Illuminator} from './illuminator.js'
 
 
-export const build_from_json = (str) => {
-  let conf = null
-  try {
-    conf = JSON.parse(str)
-  } catch (SyntaxError) {
-    return Result.Fail("You shall not parse")
-  }
-
+export const build_from_json = (conf) => {
   return extract(conf, {
     camera: build_camera,
     items: [build_item],
