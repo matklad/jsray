@@ -1,7 +1,9 @@
-export const Screen = (canvas_selection, resolution) => {
+export const Screen = (canvas_selection) => {
   const canvas = canvas_selection[0]
   const ctx = canvas.getContext("2d")
-  const [width, height] = resolution
+  const width  = canvas_selection.attr('width')
+  const height = canvas_selection.attr('height')
+  const resolution = [width, height]
   ctx.fillRect(0, 0, width, height)
 
   return {

@@ -1,50 +1,36 @@
 import {Vector} from './vector.js'
-import {Camera} from './camera.js'
-import {Scene} from './scene.js'
-import {Sphere} from './sphere.js'
-import {Plain} from './plain.js'
 import {Screen} from './screen.js'
-import {Illuminator} from './illuminator.js'
-import {colors} from './color.js'
+import {build_from_json} from './scene_builder.js'
 
 $(() => {
 
-  const camera = Camera({
-    origin: Vector(10, 0, 1.5),
-    look_at: Vector(0, 0, 1.5),
-    focus: 5,
-    screen: [6.4, 4.8]
-  })
+  const config =  {
+    resolution: [64 * 4,
+                 48 * 4],
 
-  const items = [
-    Sphere(Vector(0, 0, 1), 1, colors.red),
-    // Sphere(Vector(2, -1, 1), 1, colors.blue),
-    Plain(Vector(0, 0, 0), Vector(1, 0, 0), Vector(0, 1, 0),
-          colors.blue, colors.white)
-  ]
+    camera: {
+      origin: [10, 0, 1.5],
+      look_at: [0, 0, 1.5],
+      focus: 5,
+      screen: [6.4, 4.8]
+    },
+    ambient: [0.2, 0.2, 0.2],
+    items: [
+      {type: "sphere", origin: [0, 0, 1], radius: 1, color: "red"},
+      {type: "plain", origin: [0, 0, 0], dx: [1, 0, 0], dy: [0, 1, 0],
+       colorx: "blue", colory: "white"}
+    ],
+    illuminators: [
+      {origin: [1, -2, 2], color: "white"}
+    ]
+  }
 
-  const illuminators = [
-    Illuminator(Vector(1, -2, 2), colors.white),
-    // Illuminator(Vector(1,  2,  2), colors.green.set_bright(0.5))
-  ]
-
-  const size_multiplier = 8
-  const width = 64 * size_multiplier
-  const height = 48 * size_multiplier
-
-  const scene = Scene({
-    camera,
-    resolution: [width, height],
-    items,
-    ambient: colors.white.set_bright(0.0),
-    illuminators
-  })
-
+  const scene = build_from_json(JSON.stringify(config))
   const canvas = $("#screen")
+  const [width, height] = scene.resolution
   canvas.attr({width, height})
 
-  const screen = Screen(canvas, [width, height])
-
+  const screen = Screen(canvas)
   const start_time = performance.now();
   console.log("Start rendering...")
   for (let x = 0; x < scene.resolution[0]; x++) {
