@@ -8,8 +8,6 @@ export const Scene = ({camera,
                        illuminators,
                        background_color=colors.black}) => {
     const _find_intersection = (ray) => {
-      let min_t = -1
-      let min_item = null
       const f = (acc, item) => {
         const t = item.intersect(ray)
         if (t != -1 && (acc.t == -1 || t < acc.t)) {
