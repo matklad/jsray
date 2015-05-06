@@ -1,3 +1,4 @@
+import {Color} from './color.js'
 import {Vector} from './vector.js'
 import {Screen} from './screen.js'
 import {build_from_json} from './scene_builder.js'
@@ -39,7 +40,14 @@ const init_ui = () => {
 
 const on_start_button = () => {
   const text = ui.description.val()
-  const {ok, result: scene, message} = build_from_json(text)
+  let json = null
+  try {
+    json = JSON.parse(text)
+  } catch (SyntaxErorr) {
+    alert("Malformed config")
+    return
+  }
+  const {ok, result: scene, message} = build_from_json(json)
   if (!ok) {
     alert(message)
   } else {
@@ -48,24 +56,19 @@ const on_start_button = () => {
     ui.canvas.height(height)
     ui.canvas.attr({width, height})
     const screen = Screen(ui.canvas)
-    render_scene(scene, screen)
+    render_scene(json, screen)
   }
 }
 
 $(() => {
   init_ui()
-  on_start_button()
+  // on_start_button()
 })
 
 const render_scene = (scene, screen) => {
-  const start_time = performance.now();
-  console.log("Start rendering...")
-  for (let x = 0; x < scene.resolution[0]; x++) {
-    for (let y = 0; y < scene.resolution[1]; y++) {
-      screen.put_pixel(x, y, scene.color_at(x, y))
-    }
+  const w = new Worker('js/worker.js')
+  w.onmessage = ({data: [[x, y], [r, g, b]]}) => {
+    screen.put_pixel(x, y, Color(r, g, b))
   }
-  console.log("...done!")
-  const end_time = performance.now();
-  console.log('It took ' + (end_time - start_time) + ' ms.');
+  w.postMessage(scene)
 }
