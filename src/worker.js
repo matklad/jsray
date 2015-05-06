@@ -4,15 +4,12 @@ onmessage = (e) => {
   const {json, x_range, y_range} = e.data
   const scene =  build_from_json(json).result
   const start_time = performance.now();
-  console.log("Start rendering...")
   for (let x = x_range[0]; x < x_range[1]; x++) {
     for (let y = y_range[0]; y < y_range[1]; y++) {
       const c = scene.color_at(x, y)
       postMessage([[x, y], [c.r, c.g, c.b]])
     }
   }
-  console.log("...done!")
-  const end_time = performance.now();
-  postMessage(e.data + e.data)
+  postMessage("Done!")
   close()
 }
