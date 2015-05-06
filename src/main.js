@@ -18,14 +18,14 @@ $(() => {
 
   const items = [
     Sphere(Vector(0, 0, 1), 1, colors.red),
-    Sphere(Vector(2, -1, 1), 1, colors.blue),
-    Plain(Vector(0, 0, 0), Vector(0, 1, 0), Vector(1, 0, 0),
+    // Sphere(Vector(2, -1, 1), 1, colors.blue),
+    Plain(Vector(0, 0, 0), Vector(1, 0, 0), Vector(0, 1, 0),
           colors.blue, colors.white)
   ]
 
   const illuminators = [
-    Illuminator(Vector(1, -2, 2), colors.white.set_bright(0.5)),
-    Illuminator(Vector(1,  2,  2), colors.green.set_bright(0.5))
+    Illuminator(Vector(1, -2, 2), colors.white),
+    // Illuminator(Vector(1,  2,  2), colors.green.set_bright(0.5))
   ]
 
   const width = 64 * 8
@@ -35,7 +35,7 @@ $(() => {
     camera,
     resolution: [width, height],
     items,
-    ambient: colors.white.set_bright(0.4),
+    ambient: colors.white.set_bright(0.0),
     illuminators
   })
 
