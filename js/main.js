@@ -742,7 +742,7 @@ System.registerModule("../src/main.js", [], function(require) {
   var Screen = System.get("../src/screen.js").Screen;
   var build_from_json = System.get("../src/scene_builder.js").build_from_json;
   var default_config = {
-    resolution: [64 * 1, 48 * 1],
+    resolution: [64 * 10, 48 * 10],
     camera: {
       origin: [10, 0, 1.5],
       look_at: [0, 0, 1.5],
@@ -756,11 +756,16 @@ System.registerModule("../src/main.js", [], function(require) {
       radius: 1,
       color: "red"
     }, {
+      type: "sphere",
+      origin: [-2, 1, 3],
+      radius: 1.5,
+      color: "green"
+    }, {
       type: "plain",
       origin: [0, 0, 0],
       dx: [1, 0, 0],
       dy: [0, 1, 0],
-      colorx: "blue",
+      colorx: "black",
       colory: "white"
     }],
     illuminators: [{

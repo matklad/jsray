@@ -4,8 +4,8 @@ import {Screen} from './screen.js'
 import {build_from_json} from './scene_builder.js'
 
 const default_config =  {
-  resolution: [64 * 1,
-               48 * 1],
+  resolution: [64 * 10,
+               48 * 10],
   camera: {
     origin: [10, 0, 1.5],
     look_at: [0, 0, 1.5],
@@ -15,8 +15,9 @@ const default_config =  {
   ambient: [0.2, 0.2, 0.2],
   items: [
     {type: "sphere", origin: [0, 0, 1], radius: 1, color: "red"},
+    {type: "sphere", origin: [-2, 1, 3], radius: 1.5, color: "green"},
     {type: "plain", origin: [0, 0, 0], dx: [1, 0, 0], dy: [0, 1, 0],
-     colorx: "blue", colory: "white"}
+     colorx: "black", colory: "white"}
   ],
   illuminators: [
     {origin: [1, -2, 2], color: "white"}
