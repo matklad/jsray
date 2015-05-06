@@ -45,7 +45,7 @@ export const Scene = ({camera,
 
     const _reflect_ray = (ray, intersect, normal) => {
       const dir = ray.direction
-      const reflected_dir = dir.add(normal.scale(2 * dir.dot(normal)))
+      const reflected_dir = dir.sub(normal.scale(2 * dir.dot(normal)))
       return Ray(intersect.add(reflected_dir.scale(1e-4)), reflected_dir)
     }
 
