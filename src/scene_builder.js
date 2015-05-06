@@ -16,17 +16,51 @@ export const build_from_json = (str) => {
     return Result.Fail("You shall not parse")
   }
 
-  const camera = build_camera(conf.camera)
-  const items = conf.items.map(build_item)
-  const illuminators = conf.illuminators.map(build_illuminator)
+  return extract(conf, {
+    camera: build_camera,
+    items: [build_item],
+    illuminators: [build_illuminator],
+    resolution: null,
+    ambient: build_color
+  }).then(Scene)
+}
 
-  return Scene({
-    camera,
-    resolution: conf.resolution,
-    items,
-    ambient: build_color(conf.ambient),
-    illuminators
-  })
+const extract = (obj, fs) => {
+  const get_key = (key) => {
+    if (!(key in obj)) {
+      return Result.Fail("no " + key + " key!")
+    }
+    const value = obj[key]
+    const f = fs[key]
+    if (f === null) {
+      return Result.Ok([key, value])
+    }
+    if (f.constructor === Array) {
+      if (value.constructor !== Array) {
+        return Result.Fail("expected array in " + key)
+      }
+      return Result.all(value.map((x) => Result.Ok(x).then(f[0])))
+        .then((xs) => Result.Ok([key, xs]))
+    }
+    return Result.Ok(value)
+      .then(f)
+      .then((x) => Result.Ok([key, x]))
+  }
+  const tmp = Object.keys(fs).map(get_key)
+  return Result
+    .all(Object.keys(fs).map(get_key))
+    .then((props) => props.reduce(
+      ((acc, [key, value]) => {
+        acc[key] = value
+        return acc
+      }), {}))
+}
+
+const get = (obj, key) => {
+  if (key in obj) {
+    return Result.Fail("No " + key + " key in object " + obj)
+  }
+  return Result.Ok(obj.key)
 }
 
 

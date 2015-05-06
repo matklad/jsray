@@ -5,8 +5,8 @@ import {build_from_json} from './scene_builder.js'
 $(() => {
 
   const config =  {
-    resolution: [64 * 4,
-                 48 * 4],
+    resolution: [64 * 1,
+                 48 * 1],
 
     camera: {
       origin: [10, 0, 1.5],
@@ -25,12 +25,22 @@ $(() => {
     ]
   }
 
-  const scene = build_from_json(JSON.stringify(config))
-  const canvas = $("#screen")
-  const [width, height] = scene.resolution
-  canvas.attr({width, height})
+  const parse_result = build_from_json(JSON.stringify(config))
+  if (!parse_result.ok) {
+    alert(parse_result.message)
+  } else {
+    const scene = parse_result.result
+    const canvas = $("#screen")
+    const [width, height] = scene.resolution
+    canvas.attr({width, height})
+    const screen = Screen(canvas)
+    render_scene(scene, screen)
+  }
+})
 
-  const screen = Screen(canvas)
+const render_scene = (scene, screen) => {
+  console.log(scene)
+
   const start_time = performance.now();
   console.log("Start rendering...")
   for (let x = 0; x < scene.resolution[0]; x++) {
@@ -41,4 +51,4 @@ $(() => {
   console.log("...done!")
   const end_time = performance.now();
   console.log('It took ' + (end_time - start_time) + ' ms.');
-})
+}
