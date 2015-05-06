@@ -66,7 +66,18 @@ $(() => {
 })
 
 const render_scene = (json, screen) => {
-  const put_pixel = ({data: [[x, y], [r, g, b]]}) => {
+  let n_done = 0
+  const on_message = (e) => {
+    if (e.data === "Done!") {
+      n_done++
+      if (n_done === n_workers) {
+        const end_time = performance.now();
+        console.log("...done!")
+        console.log((end_time - start_time) / 1000, 'seconds')
+      }
+      return
+    }
+    const {data: [[x, y], [r, g, b]]} = e
     screen.put_pixel(x, y, Color(r, g, b))
   }
 
@@ -74,13 +85,15 @@ const render_scene = (json, screen) => {
   const [width, height] = screen.resolution
   const block = Math.floor(width / n_workers)
 
+  console.log("Start rendering...")
+  const start_time = performance.now();
   for (let i = 0; i < n_workers; i++) {
     const lo = i * block
     const hi = i === n_workers - 1 ? width : (i + 1) * block
     const x_range = [lo, hi]
     const y_range = [0, height]
     const w = new Worker('js/worker.js')
-    w.onmessage = put_pixel
+    w.onmessage = on_message
     w.postMessage({json, x_range, y_range})
   }
 }
