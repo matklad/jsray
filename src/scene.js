@@ -43,6 +43,21 @@ export const Scene = ({camera,
       return illuminators.reduce(f, init_color)
     }
 
+    const _run_ray = (ray) => {
+      const {t, item} = _find_intersection(ray)
+      if (item) {
+        const intersect = ray.point_along(t)
+        const color = _item_lighted_at(item, intersect, ray.direction.scale(-1))
+        const normal = item.normal_at(intersect)
+        const dir = ray.direction
+        const reflected_dir = dir.add(normal.scale(2 * dir.dot(normal)))
+        const reflected = Ray(intersect, reflected_dir)
+        return {color, reflected}
+      } else {
+        return {color: null, reflected: null}
+      }
+    }
+
   return {
     resolution: resolution,
 
@@ -52,8 +67,9 @@ export const Scene = ({camera,
       const dy = (2 * y - res_y) / res_y
 
       const ray = camera.cast_ray(dx, dy)
-      const {t, item} = _find_intersection(ray)
-      return item ? _item_lighted_at(item, ray.point_along(t), ray.direction.scale(-1)) : background_color
+      const {color, reflected} = _run_ray(ray)
+
+      return color?color:background_color
     }
 
   }
