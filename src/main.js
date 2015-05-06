@@ -28,8 +28,9 @@ $(() => {
     // Illuminator(Vector(1,  2,  2), colors.green.set_bright(0.5))
   ]
 
-  const width = 64 * 8
-  const height = 48 * 8
+  const size_multiplier = 8
+  const width = 64 * size_multiplier
+  const height = 48 * size_multiplier
 
   const scene = Scene({
     camera,
