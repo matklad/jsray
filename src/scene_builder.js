@@ -57,21 +57,21 @@ const extract = (obj, fs) => {
 }
 
 const get = (obj, key) => {
-  if (key in obj) {
-    return Result.Fail("No " + key + " key in object " + obj)
+  if (!(key in obj)) {
+    return Result.Fail("No " + key + " key in object " + JSON.stringify(obj))
   }
-  return Result.Ok(obj.key)
+  return Result.Ok(obj[key])
 }
 
-
-const build_item = (conf) => {
-  switch (conf.type) {
-  case "sphere": return build_sphere(conf)
-  case "plain": return build_plain(conf)
-  default:
-    // MAKE ME A MONAD, PLEASE!!!
-  }
-}
+const build_item = (conf) =>
+  get(conf, 'type').then((type) => {
+    switch (type) {
+    case "sphere": return build_sphere(conf)
+    case "plain": return build_plain(conf)
+    default:
+      return Result.Fail("unknown item type " + type)
+    }
+  })
 
 
 const build_sphere = (conf) => Sphere(
@@ -90,12 +90,13 @@ const build_illuminator = (conf) => Illuminator(
 )
 
 
-const build_camera = (conf) => Camera({
-  origin: build_vector(conf.origin),
-  look_at: build_vector(conf.look_at),
-  focus: conf.focus,
-  screen: conf.screen
-})
+const build_camera = (conf) =>
+        extract(conf, {
+          origin: build_vector,
+          look_at: build_vector,
+          focus: null,
+          screen: null
+        }).then(Camera)
 
 
 const build_color = (conf) => {
