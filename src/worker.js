@@ -14,4 +14,5 @@ onmessage = (e) => {
   console.log("...done!")
   const end_time = performance.now();
   postMessage(e.data + e.data)
+  close()
 }
