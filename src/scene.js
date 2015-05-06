@@ -24,7 +24,7 @@ export const Scene = ({camera,
     const _item_lighted_at = (item, pos) => {
       const f = (color, illuminator) => {
         const dir = (illuminator.origin.sub(pos)).direction()
-        if (!_find_intersection(Ray(pos, dir)).item) {
+        if (!_find_intersection(Ray(pos.add(dir.scale(1e-4)), dir)).item) {
           const bright = item.normal_at(pos).dot(dir)
           const light = illuminator.color.set_bright(bright)
           return color.mix_with(item.color_at(pos).under_light(light))
