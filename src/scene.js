@@ -41,10 +41,10 @@ export const Scene = ({camera,
       return illuminators.reduce(f, init_color)
     }
 
-    const _reflect_ray = (ray, intersect, normal) => {
+    const _reflect_ray = (ray, point, normal) => {
       const dir = ray.direction
       const reflected_dir = dir.sub(normal.scale(2 * dir.dot(normal)))
-      return Ray(intersect.add(reflected_dir.scale(1e-4)), reflected_dir)
+      return Ray(point.add(reflected_dir.scale(1e-4)), reflected_dir)
     }
 
     const _run_ray = (ray) => {

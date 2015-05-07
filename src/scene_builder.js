@@ -1,5 +1,6 @@
 import {Plain} from './plain.js'
 import {Sphere} from './sphere.js'
+import {Triangle} from './triangle.js'
 import {Vector} from './vector.js'
 import {Color, colors} from './color.js'
 import {Result} from './result.js'
@@ -61,6 +62,7 @@ const build_item = (conf) =>
     switch (type) {
     case "sphere": return build_sphere(conf)
     case "plain": return build_plain(conf)
+    case "triangle": return build_triangle(conf)
     default:
       return Result.Fail("unknown item type " + type)
     }
@@ -77,6 +79,12 @@ const build_plain = (conf) => Plain(
   build_color(conf.colorx), build_color(conf.colory)
 )
 
+const build_triangle = (conf) => Triangle(
+  build_vector(conf.a),
+  build_vector(conf.b),
+  build_vector(conf.c),
+  build_color(conf.color)
+)
 
 const build_illuminator = (conf) => Illuminator(
   build_vector(conf.origin), build_color(conf.color)
