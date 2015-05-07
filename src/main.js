@@ -75,10 +75,11 @@ const render_scene = (json, screen) => {
         console.log("...done!")
         console.log((end_time - start_time) / 1000, 'seconds')
       }
+
       return
     }
-    const {data: [[x, y], [r, g, b]]} = e
-    screen.put_pixel(x, y, Color(r, g, b))
+    e.data.forEach(([[x, y], [r, g, b]]) =>
+                   screen.put_pixel(x, y, Color(r, g, b)))
   }
 
   const n_workers = 4
