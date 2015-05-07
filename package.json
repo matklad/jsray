@@ -1,0 +1,7 @@
+{
+  "name": "jsray",
+  "version": "1.0.0",
+  "dependencies": {
+    "traceur": "0.0.89"
+  }
+}
