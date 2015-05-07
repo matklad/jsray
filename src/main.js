@@ -15,6 +15,7 @@ const default_config =  {
   ambient: [0.2, 0.2, 0.2],
   items: [
     {type: "sphere", origin: [0, 0, 1], radius: 1, color: "red"},
+    {type: "triangle", a: [-2, -1, 0], b: [0, 0, 2], c: [2, 1, 0], color: "green"},
     {type: "plain", origin: [0, 0, 0], dx: [1, 0, 0], dy: [0, 1, 0],
      colorx: "blue", colory: "white"}
   ],
