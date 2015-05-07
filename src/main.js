@@ -4,8 +4,8 @@ import {Screen} from './screen.js'
 import {build_from_json} from './scene_builder.js'
 
 const default_config =  {
-  resolution: [64 * 1,
-               48 * 1],
+  resolution: [64 * 10,
+               48 * 10],
   camera: {
     origin: [10, 0, 1.5],
     look_at: [0, 0, 1.5],
@@ -74,15 +74,18 @@ const render_scene = (json, screen) => {
       if (n_done === n_workers) {
         const end_time = performance.now();
         console.log("...done!")
-        console.log((end_time - start_time) / 1000, 'seconds')
+        const seconds = ((end_time - start_time) / 1000).toFixed(2)
+        console.log(seconds, 'seconds')
+        $('.spf').text(seconds)
       }
+
       return
     }
-    const {data: [[x, y], [r, g, b]]} = e
-    screen.put_pixel(x, y, Color(r, g, b))
+    e.data.forEach(([[x, y], [r, g, b]]) =>
+                   screen.put_pixel(x, y, Color(r, g, b)))
   }
 
-  const n_workers = 8
+  const n_workers = 4
   const [width, height] = screen.resolution
   const block = Math.floor(width / n_workers)
 

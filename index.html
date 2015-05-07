@@ -5,17 +5,45 @@
     <link href="style.css" rel="stylesheet"/>
   </head>
   <body>
-    <h1 id="message">Hello</h1>
+    <h1 class="header">Just another ray tracer</h1>
 
-    <div class="container">
-      <canvas id='screen'>Refresh page</canvas>
+    <div class="screen-container">
+      <div class='screen-wrapper'>
+        <div class="counter">
+          SPF: <span class="spf"></span>
+        </div>
+        <canvas id='screen'>Refresh page</canvas>
+      </div>
+
     </div>
 
+    <div class="controlls-container">
+      <form class="controlls" action="javascript:void(0)">
+        <button class="start-button">Render It!</button>
+        <textarea class="scene-description" cols="100" rows="40">
+        </textarea>
+      </form>
+    </div>
 
-    <button class="start-button">Render It!</button>
+    <div class="manual-container">
+      <section class="manual">
+        <h2 class="manual-header">Manual</h2>
 
-    <textarea class="scene-description" cols="100" rows="40">
-    </textarea>
+
+        <p class="manual-text">
+          This is a ray tracing algorithm, implemented in ECMAScript6.
+
+          Source code can be found at <a href="https://github.com/matklad/jsray">https://github.com/matklad/jsray</a>.
+
+          Enter the scene description in JSON format in the text area and
+          press "Render It!" button.
+
+          See the initial example for the format details.
+
+        </p>
+      </section>
+    </div>
+
 
     <script src="/js/jquery.js"></script>
     <script src="/js/traceur-runtime.js"></script>
