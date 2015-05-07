@@ -4,8 +4,8 @@ import {Screen} from './screen.js'
 import {build_from_json} from './scene_builder.js'
 
 const default_config =  {
-  resolution: [64 * 1,
-               48 * 1],
+  resolution: [64 * 10,
+               48 * 10],
   camera: {
     origin: [10, 0, 1.5],
     look_at: [0, 0, 1.5],
@@ -81,7 +81,7 @@ const render_scene = (json, screen) => {
     screen.put_pixel(x, y, Color(r, g, b))
   }
 
-  const n_workers = 8
+  const n_workers = 4
   const [width, height] = screen.resolution
   const block = Math.floor(width / n_workers)
 

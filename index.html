@@ -5,17 +5,20 @@
     <link href="style.css" rel="stylesheet"/>
   </head>
   <body>
-    <h1 id="message">Hello</h1>
+    <h1 class="header">Just another ray tracer</h1>
 
-    <div class="container">
+    <div class="screen-container">
       <canvas id='screen'>Refresh page</canvas>
     </div>
 
+    <div class="controlls-container">
+      <form class="controlls" action="javascript:void(0)">
+        <button class="start-button">Render It!</button>
+        <textarea class="scene-description" cols="100" rows="40">
+        </textarea>
+      </form>
+    </div>
 
-    <button class="start-button">Render It!</button>
-
-    <textarea class="scene-description" cols="100" rows="40">
-    </textarea>
 
     <script src="/js/jquery.js"></script>
     <script src="/js/traceur-runtime.js"></script>
