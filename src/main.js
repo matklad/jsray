@@ -15,8 +15,8 @@ const default_config =  {
   },
   ambient: [0.2, 0.2, 0.2],
   items: [
-    {type: "sphere", origin: [0, 0, 1], radius: 1, color: "red", material: "plastic"},
-    {type: "sphere", origin: [0, 2, 1], radius: 1, color: "red", material: "metal"},
+    {type: "sphere", origin: [0, 0, 1], radius: 1, color: "green", material: "plastic"},
+    {type: "sphere", origin: [0, 2, 1], radius: 1, color: "white", material: "metal"},
     {type: "plain", origin: [0, 0, 0], dx: [1, 0, 0], dy: [0, 1, 0],
      colorx: "blue", colory: "white", material: "plastic"}
   ],
