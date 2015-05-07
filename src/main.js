@@ -73,7 +73,9 @@ const render_scene = (json, screen) => {
       if (n_done === n_workers) {
         const end_time = performance.now();
         console.log("...done!")
-        console.log((end_time - start_time) / 1000, 'seconds')
+        const seconds = ((end_time - start_time) / 1000).toFixed(2)
+        console.log(seconds, 'seconds')
+        $('.spf').text(seconds)
       }
 
       return

@@ -19,6 +19,16 @@ body {
   height: 480px;
 }
 
+.screen-wrapper {
+  position: relative;
+}
+
+.counter {
+  position: absolute;
+  left: 100%;
+  width: 100px;
+  padding-left: 5px;
+}
 
 .controlls-container {
   margin-top: 40px;
