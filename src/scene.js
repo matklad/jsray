@@ -1,4 +1,4 @@
-import {colors} from './color.js'
+import {colors, Color} from './color.js'
 import {Ray} from './ray.js'
 
 export const Scene = ({camera,
@@ -6,7 +6,8 @@ export const Scene = ({camera,
                        items,
                        ambient,
                        illuminators,
-                       background_color=colors.black}) => {
+                       background_color=colors.black,
+                       upsampling=1}) => {
     const _find_intersection = (ray) => {
       const f = (acc, item) => {
         const t = item.intersect(ray)
@@ -56,29 +57,39 @@ export const Scene = ({camera,
         const reflected = _reflect_ray(ray, intersect, normal)
         return {color, material: item.material, reflected}
       } else {
-        return {color: null, matherial: null, reflected: null}
+        return {color: null, material: null, reflected: null}
       }
     }
+
+   const _color_at = (x, y) => {
+     const [res_x, res_y] = resolution.map((x) => x * upsampling)
+     const dx = (2 * x - res_x) / res_x
+     const dy = (2 * y - res_y) / res_y
+
+     const ray = camera.cast_ray(dx, dy)
+     const {color, material, reflected} = _run_ray(ray)
+     if (color) {
+       const {color: mirrored_color, _m, _r} = _run_ray(reflected)
+       if (mirrored_color) {
+         return color.mix_with(mirrored_color.set_bright(material.mirroring))
+       }
+       return color
+     }
+
+     return background_color
+   }
 
   return {
     resolution: resolution,
 
     color_at: (x, y) => {
-      const [res_x, res_y] = resolution
-      const dx = (2 * x - res_x) / res_x
-      const dy = (2 * y - res_y) / res_y
-
-      const ray = camera.cast_ray(dx, dy)
-      const {color, material, reflected} = _run_ray(ray)
-      if (color) {
-        const {color: mirrored_color, _m, _r} = _run_ray(reflected)
-        if (mirrored_color) {
-          return color.mix_with(mirrored_color.set_bright(material.mirroring))
-        }
-        return color
+      let c = Color(0, 0, 0)
+      for (let i = 0; i < upsampling; i++) {
+        for (let j = 0; j < upsampling; j++)
+          c = c.mix_with(_color_at(upsampling * x + i, upsampling * y + j)
+                         .set_bright(1 / (upsampling * upsampling)))
       }
-
-      return background_color
+      return c
     }
 
   }

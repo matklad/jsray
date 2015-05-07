@@ -16,7 +16,8 @@ export const build_from_json = (conf) => {
     items: [build_item],
     illuminators: [build_illuminator],
     resolution: null,
-    ambient: build_color
+    ambient: build_color,
+    upsampling: null
   }).then(Scene)
 }
 
