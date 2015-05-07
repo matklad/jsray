@@ -1,20 +1,26 @@
-export const Color = (r, g, b) => {return {
-  r: r,
-  g: g,
-  b: b,
-  as_rgba_str: () => {
-    const f = (alpha) => Math.min(Math.round((alpha * 255)), 255)
-    return "rgba(" + f(r) + "," + f(g) + "," + f(b) + "," + 255 +")"
-  },
+export const Color = (r, g, b) => {
+  const f = (alpha) =>
+          Math.min(Math.round((alpha * 255)), 255)
 
-  under_light: (light) => {
-    return Color(r * light.r, g * light.g, b * light.b)
-  },
+  return {
+    r: r,
+    g: g,
+    b: b,
 
-  mix_with: (other) => Color(r + other.r, g + other.g, b + other.b),
+    as_uint8: () => [f(r), f(g), f(b)],
 
-  set_bright: (bright) => Color(r * bright, g * bright, b * bright)
-}}
+    as_rgba_str: () => {
+      return "rgba(" + f(r) + "," + f(g) + "," + f(b) + "," + 255 +")"
+    },
+
+    under_light: (light) => {
+      return Color(r * light.r, g * light.g, b * light.b)
+    },
+
+    mix_with: (other) => Color(r + other.r, g + other.g, b + other.b),
+
+    set_bright: (bright) => Color(r * bright, g * bright, b * bright)
+  }}
 
 
 export const colors = {

@@ -2,9 +2,10 @@ import {Vector} from "./vector.js"
 import {Ray, ray_from_to} from "./ray.js"
 import {solve_square_equation} from "./utils.js"
 
-export const Sphere = (center, radius, color) => {return {
+export const Sphere = (center, radius, color, material) => {return {
   center: center,
   radius: radius,
+  material: material,
 
   // should return positive alpha such that ray.point_along(alpha) is on shpere
   // or -1, if there is no such point

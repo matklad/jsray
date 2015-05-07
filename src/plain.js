@@ -1,8 +1,10 @@
-export const Plain = (origin, dx, dy, color_a, color_b) => {
+export const Plain = (origin, dx, dy, color_a, color_b, material) => {
   // Plain is origin + alpha dx + beta dy
   const normal = dx.cross(dy).direction()
 
   return {
+    material: material,
+
     intersect: (ray) => {
       const {origin: ro, direction: rd} = ray
       const p = rd.dot(normal)

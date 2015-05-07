@@ -4,16 +4,19 @@ System.registerModule("../src/color.js", [], function(require) {
   var $__0;
   var __moduleName = "../src/color.js";
   var Color = (function(r, g, b) {
+    var f = ($traceurRuntime.initTailRecursiveFunction(function(alpha) {
+      return $traceurRuntime.call(function(alpha) {
+        return $traceurRuntime.continuation(Math.min, Math, [Math.round((alpha * 255)), 255]);
+      }, this, arguments);
+    }));
     return {
       r: r,
       g: g,
       b: b,
+      as_uint8: (function() {
+        return [f(r), f(g), f(b)];
+      }),
       as_rgba_str: (function() {
-        var f = ($traceurRuntime.initTailRecursiveFunction(function(alpha) {
-          return $traceurRuntime.call(function(alpha) {
-            return $traceurRuntime.continuation(Math.min, Math, [Math.round((alpha * 255)), 255]);
-          }, this, arguments);
-        }));
         return "rgba(" + f(r) + "," + f(g) + "," + f(b) + "," + 255 + ")";
       }),
       under_light: ($traceurRuntime.initTailRecursiveFunction(function(light) {
@@ -227,13 +230,38 @@ System.registerModule("../src/illuminator.js", [], function(require) {
   }), $__1);
 });
 $traceurRuntime.options.symbols = true;
+System.registerModule("../src/material.js", [], function(require) {
+  "use strict";
+  var $__0;
+  var __moduleName = "../src/material.js";
+  var Material = (function(shine, mirroring) {
+    return {
+      alpha: Math.round(Math.pow(10, (1 - shine) * 5)),
+      mirroring: mirroring
+    };
+  });
+  var materials = {
+    metal: Material(0.8, 0.2),
+    plastic: Material(0.01, 0.01),
+    mirror: Material(0.7, 0.9)
+  };
+  return ($__0 = {}, Object.defineProperty($__0, "materials", {
+    get: function() {
+      return materials;
+    },
+    configurable: true,
+    enumerable: true
+  }), $__0);
+});
+$traceurRuntime.options.symbols = true;
 System.registerModule("../src/plain.js", [], function(require) {
   "use strict";
   var $__0;
   var __moduleName = "../src/plain.js";
-  var Plain = (function(origin, dx, dy, color_a, color_b) {
+  var Plain = (function(origin, dx, dy, color_a, color_b, material) {
     var normal = dx.cross(dy).direction();
     return {
+      material: material,
       intersect: (function(ray) {
         var $__1 = ray,
             ro = $__1.origin,
@@ -336,17 +364,21 @@ System.registerModule("../src/scene.js", [], function(require) {
   "use strict";
   var $__2;
   var __moduleName = "../src/scene.js";
-  var colors = System.get("../src/color.js").colors;
+  var $__0 = System.get("../src/color.js"),
+      colors = $__0.colors,
+      Color = $__0.Color;
   var Ray = System.get("../src/ray.js").Ray;
   var Scene = (function($__3) {
-    var $__5;
+    var $__5,
+        $__6;
     var $__4 = $__3,
         camera = $__4.camera,
         resolution = $__4.resolution,
         items = $__4.items,
         ambient = $__4.ambient,
         illuminators = $__4.illuminators,
-        background_color = ($__5 = $__4.background_color) === void 0 ? colors.black : $__5;
+        background_color = ($__5 = $__4.background_color) === void 0 ? colors.black : $__5,
+        upsampling = ($__6 = $__4.upsampling) === void 0 ? 1 : $__6;
     var _find_intersection = ($traceurRuntime.initTailRecursiveFunction(function(ray) {
       return $traceurRuntime.call(function(ray) {
         var f = (function(acc, item) {
@@ -375,7 +407,7 @@ System.registerModule("../src/scene.js", [], function(require) {
               var diffuse_bright = normal.dot(light_dir);
               var diffuse_light = illuminator.color.set_bright(diffuse_bright);
               var reflected_dir = normal.scale(2 * light_dir.dot(normal)).sub(light_dir);
-              var reflected_bright = Math.pow(reflected_dir.dot(viewer_dir), 2);
+              var reflected_bright = Math.pow(reflected_dir.dot(viewer_dir), item.material.alpha);
               var reflected_light = illuminator.color.set_bright(reflected_bright);
               var item_color = item.color_at(pos);
               var with_diffuse = color.mix_with(item_color.under_light(diffuse_light));
@@ -388,17 +420,17 @@ System.registerModule("../src/scene.js", [], function(require) {
         return $traceurRuntime.continuation(illuminators.reduce, illuminators, [f, init_color]);
       }, this, arguments);
     }));
-    var _reflect_ray = ($traceurRuntime.initTailRecursiveFunction(function(ray, intersect, normal) {
-      return $traceurRuntime.call(function(ray, intersect, normal) {
+    var _reflect_ray = ($traceurRuntime.initTailRecursiveFunction(function(ray, point, normal) {
+      return $traceurRuntime.call(function(ray, point, normal) {
         var dir = ray.direction;
         var reflected_dir = dir.sub(normal.scale(2 * dir.dot(normal)));
-        return $traceurRuntime.continuation(Ray, null, [intersect.add(reflected_dir.scale(1e-4)), reflected_dir]);
+        return $traceurRuntime.continuation(Ray, null, [point.add(reflected_dir.scale(1e-4)), reflected_dir]);
       }, this, arguments);
     }));
     var _run_ray = (function(ray) {
-      var $__6 = _find_intersection(ray),
-          t = $__6.t,
-          item = $__6.item;
+      var $__7 = _find_intersection(ray),
+          t = $__7.t,
+          item = $__7.item;
       if (item) {
         var intersect = ray.point_along(t);
         var normal = item.normal_at(intersect);
@@ -406,42 +438,56 @@ System.registerModule("../src/scene.js", [], function(require) {
         var reflected = _reflect_ray(ray, intersect, normal);
         return {
           color: color,
+          material: item.material,
           reflected: reflected
         };
       } else {
         return {
           color: null,
+          material: null,
           reflected: null
         };
       }
     });
+    var _color_at = ($traceurRuntime.initTailRecursiveFunction(function(x, y) {
+      return $traceurRuntime.call(function(x, y) {
+        var $__8,
+            $__9;
+        var $__7 = resolution.map((function(x) {
+          return x * upsampling;
+        })),
+            res_x = ($__8 = $__7[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__9 = $__8.next()).done ? void 0 : $__9.value),
+            res_y = ($__9 = $__8.next()).done ? void 0 : $__9.value;
+        var dx = (2 * x - res_x) / res_x;
+        var dy = (2 * y - res_y) / res_y;
+        var ray = camera.cast_ray(dx, dy);
+        var $__10 = _run_ray(ray),
+            color = $__10.color,
+            material = $__10.material,
+            reflected = $__10.reflected;
+        if (color) {
+          var $__11 = _run_ray(reflected),
+              mirrored_color = $__11.color,
+              _m = $__11._m,
+              _r = $__11._r;
+          if (mirrored_color) {
+            return $traceurRuntime.continuation(color.mix_with, color, [mirrored_color.set_bright(material.mirroring)]);
+          }
+          return color;
+        }
+        return background_color;
+      }, this, arguments);
+    }));
     return {
       resolution: resolution,
-      color_at: ($traceurRuntime.initTailRecursiveFunction(function(x, y) {
-        return $traceurRuntime.call(function(x, y) {
-          var $__7,
-              $__8;
-          var $__6 = resolution,
-              res_x = ($__7 = $__6[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__8 = $__7.next()).done ? void 0 : $__8.value),
-              res_y = ($__8 = $__7.next()).done ? void 0 : $__8.value;
-          var dx = (2 * x - res_x) / res_x;
-          var dy = (2 * y - res_y) / res_y;
-          var ray = camera.cast_ray(dx, dy);
-          var $__9 = _run_ray(ray),
-              color = $__9.color,
-              reflected = $__9.reflected;
-          if (color) {
-            var $__10 = _run_ray(reflected),
-                mirrored_color = $__10.color,
-                _ = $__10._;
-            if (mirrored_color) {
-              return $traceurRuntime.continuation(color.mix_with, color, [mirrored_color.set_bright(0.3)]);
-            }
-            return color;
-          }
-          return background_color;
-        }, this, arguments);
-      }))
+      color_at: (function(x, y) {
+        var c = Color(0, 0, 0);
+        for (var i = 0; i < upsampling; i++) {
+          for (var j = 0; j < upsampling; j++)
+            c = c.mix_with(_color_at(upsampling * x + i, upsampling * y + j).set_bright(1 / (upsampling * upsampling)));
+        }
+        return c;
+      })
     };
   });
   return ($__2 = {}, Object.defineProperty($__2, "Scene", {
@@ -490,11 +536,12 @@ System.registerModule("../src/sphere.js", [], function(require) {
       Ray = $__1.Ray,
       ray_from_to = $__1.ray_from_to;
   var solve_square_equation = System.get("../src/utils.js").solve_square_equation;
-  var Sphere = (function(center, radius, color) {
+  var Sphere = (function(center, radius, color, material) {
     var $__6;
     return {
       center: center,
       radius: radius,
+      material: material,
       intersect: (function(ray) {
         var $__5;
         var $__4 = ray,
@@ -545,42 +592,91 @@ System.registerModule("../src/sphere.js", [], function(require) {
   }), $__3);
 });
 $traceurRuntime.options.symbols = true;
+System.registerModule("../src/triangle.js", [], function(require) {
+  "use strict";
+  var $__0;
+  var __moduleName = "../src/triangle.js";
+  var Triangle = (function(a, b, c, color, material) {
+    var ab = b.sub(a);
+    var bc = c.sub(b);
+    var ca = a.sub(c);
+    var normal = c.sub(a).cross(b.sub(a)).direction();
+    return {
+      a: a,
+      b: b,
+      c: c,
+      material: material,
+      intersect: (function(ray) {
+        var $__1 = ray,
+            ro = $__1.origin,
+            rd = $__1.direction;
+        var t = (a.sub(ro)).dot(normal) / rd.dot(normal);
+        if (t < 0) {
+          return -1;
+        }
+        var pint = ray.point_along(t);
+        var eps = 1e-4;
+        if (pint.sub(a).cross(ab).dot(normal) >= eps && pint.sub(b).cross(bc).dot(normal) >= eps && pint.sub(c).cross(ca).dot(normal) >= eps) {
+          return t;
+        }
+        return -1;
+      }),
+      normal_at: (function(point) {
+        return normal;
+      }),
+      color_at: (function(point) {
+        return color;
+      })
+    };
+  });
+  return ($__0 = {}, Object.defineProperty($__0, "Triangle", {
+    get: function() {
+      return Triangle;
+    },
+    configurable: true,
+    enumerable: true
+  }), $__0);
+});
+$traceurRuntime.options.symbols = true;
 System.registerModule("../src/scene_builder.js", [], function(require) {
   "use strict";
-  var $__13,
-      $__18,
-      $__17,
-      $__23;
-  var $__8;
+  var $__15,
+      $__20,
+      $__19,
+      $__26;
+  var $__10;
   var __moduleName = "../src/scene_builder.js";
   var Plain = System.get("../src/plain.js").Plain;
   var Sphere = System.get("../src/sphere.js").Sphere;
+  var Triangle = System.get("../src/triangle.js").Triangle;
   var Vector = System.get("../src/vector.js").Vector;
-  var $__3 = System.get("../src/color.js"),
-      Color = $__3.Color,
-      colors = $__3.colors;
+  var $__4 = System.get("../src/color.js"),
+      Color = $__4.Color,
+      colors = $__4.colors;
+  var materials = System.get("../src/material.js").materials;
   var Result = System.get("../src/result.js").Result;
   var Scene = System.get("../src/scene.js").Scene;
   var Camera = System.get("../src/camera.js").Camera;
   var Illuminator = System.get("../src/illuminator.js").Illuminator;
   var build_from_json = ($traceurRuntime.initTailRecursiveFunction(function(conf) {
     return $traceurRuntime.call(function(conf) {
-      return ($__13 = extract(conf, {
+      return ($__15 = extract(conf, {
         camera: build_camera,
         items: [build_item],
         illuminators: [build_illuminator],
         resolution: null,
-        ambient: build_color
-      }), $traceurRuntime.continuation($__13.then, $__13, [Scene]));
+        ambient: build_color,
+        upsampling: null
+      }), $traceurRuntime.continuation($__15.then, $__15, [Scene]));
     }, this, arguments);
   }));
   var extract = ($traceurRuntime.initTailRecursiveFunction(function(obj, fs) {
     return $traceurRuntime.call(function(obj, fs) {
-      var $__16,
-          $__17;
+      var $__18,
+          $__19;
       var get_key = ($traceurRuntime.initTailRecursiveFunction(function(key) {
         return $traceurRuntime.call(function(key) {
-          var $__15;
+          var $__17;
           if (!($traceurRuntime.toProperty(key) in obj)) {
             return $traceurRuntime.continuation(Result.Fail, Result, ["no " + key + " key!"]);
           }
@@ -593,17 +689,17 @@ System.registerModule("../src/scene_builder.js", [], function(require) {
             if (value.constructor !== Array) {
               return $traceurRuntime.continuation(Result.Fail, Result, ["expected array in " + key]);
             }
-            return ($__16 = Result.all(value.map(($traceurRuntime.initTailRecursiveFunction(function(x) {
+            return ($__18 = Result.all(value.map(($traceurRuntime.initTailRecursiveFunction(function(x) {
               return $traceurRuntime.call(function(x) {
-                return ($__15 = Result.Ok(x), $traceurRuntime.continuation($__15.then, $__15, [f[0]]));
+                return ($__17 = Result.Ok(x), $traceurRuntime.continuation($__17.then, $__17, [f[0]]));
               }, this, arguments);
-            })))), $traceurRuntime.continuation($__16.then, $__16, [($traceurRuntime.initTailRecursiveFunction(function(xs) {
+            })))), $traceurRuntime.continuation($__18.then, $__18, [($traceurRuntime.initTailRecursiveFunction(function(xs) {
               return $traceurRuntime.call(function(xs) {
                 return $traceurRuntime.continuation(Result.Ok, Result, [[key, xs]]);
               }, this, arguments);
             }))]));
           }
-          return ($__17 = Result.Ok(value).then(f), $traceurRuntime.continuation($__17.then, $__17, [($traceurRuntime.initTailRecursiveFunction(function(x) {
+          return ($__19 = Result.Ok(value).then(f), $traceurRuntime.continuation($__19.then, $__19, [($traceurRuntime.initTailRecursiveFunction(function(x) {
             return $traceurRuntime.call(function(x) {
               return $traceurRuntime.continuation(Result.Ok, Result, [[key, x]]);
             }, this, arguments);
@@ -611,14 +707,14 @@ System.registerModule("../src/scene_builder.js", [], function(require) {
         }, this, arguments);
       }));
       var tmp = Object.keys(fs).map(get_key);
-      return ($__18 = Result.all(Object.keys(fs).map(get_key)), $traceurRuntime.continuation($__18.then, $__18, [($traceurRuntime.initTailRecursiveFunction(function(props) {
+      return ($__20 = Result.all(Object.keys(fs).map(get_key)), $traceurRuntime.continuation($__20.then, $__20, [($traceurRuntime.initTailRecursiveFunction(function(props) {
         return $traceurRuntime.call(function(props) {
-          return $traceurRuntime.continuation(props.reduce, props, [((function(acc, $__9) {
-            var $__11,
-                $__12;
-            var $__10 = $__9,
-                key = ($__11 = $__10[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__12 = $__11.next()).done ? void 0 : $__12.value),
-                value = ($__12 = $__11.next()).done ? void 0 : $__12.value;
+          return $traceurRuntime.continuation(props.reduce, props, [((function(acc, $__11) {
+            var $__13,
+                $__14;
+            var $__12 = $__11,
+                key = ($__13 = $__12[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__14 = $__13.next()).done ? void 0 : $__14.value),
+                value = ($__14 = $__13.next()).done ? void 0 : $__14.value;
             acc[$traceurRuntime.toProperty(key)] = value;
             return acc;
           })), {}]);
@@ -636,13 +732,15 @@ System.registerModule("../src/scene_builder.js", [], function(require) {
   }));
   var build_item = ($traceurRuntime.initTailRecursiveFunction(function(conf) {
     return $traceurRuntime.call(function(conf) {
-      return ($__17 = get(conf, 'type'), $traceurRuntime.continuation($__17.then, $__17, [($traceurRuntime.initTailRecursiveFunction(function(type) {
+      return ($__19 = get(conf, 'type'), $traceurRuntime.continuation($__19.then, $__19, [($traceurRuntime.initTailRecursiveFunction(function(type) {
         return $traceurRuntime.call(function(type) {
           switch (type) {
             case "sphere":
               return $traceurRuntime.continuation(build_sphere, null, [conf]);
             case "plain":
               return $traceurRuntime.continuation(build_plain, null, [conf]);
+            case "triangle":
+              return $traceurRuntime.continuation(build_triangle, null, [conf]);
             default:
               return $traceurRuntime.continuation(Result.Fail, Result, ["unknown item type " + type]);
           }
@@ -652,12 +750,17 @@ System.registerModule("../src/scene_builder.js", [], function(require) {
   }));
   var build_sphere = ($traceurRuntime.initTailRecursiveFunction(function(conf) {
     return $traceurRuntime.call(function(conf) {
-      return $traceurRuntime.continuation(Sphere, null, [build_vector(conf.origin), conf.radius, build_color(conf.color)]);
+      return $traceurRuntime.continuation(Sphere, null, [build_vector(conf.origin), conf.radius, build_color(conf.color), build_material(conf.material)]);
     }, this, arguments);
   }));
   var build_plain = ($traceurRuntime.initTailRecursiveFunction(function(conf) {
     return $traceurRuntime.call(function(conf) {
-      return $traceurRuntime.continuation(Plain, null, [build_vector(conf.origin), build_vector(conf.dx), build_vector(conf.dy), build_color(conf.colorx), build_color(conf.colory)]);
+      return $traceurRuntime.continuation(Plain, null, [build_vector(conf.origin), build_vector(conf.dx), build_vector(conf.dy), build_color(conf.colorx), build_color(conf.colory), build_material(conf.material)]);
+    }, this, arguments);
+  }));
+  var build_triangle = ($traceurRuntime.initTailRecursiveFunction(function(conf) {
+    return $traceurRuntime.call(function(conf) {
+      return $traceurRuntime.continuation(Triangle, null, [build_vector(conf.a), build_vector(conf.b), build_vector(conf.c), build_color(conf.color), build_material(conf.material)]);
     }, this, arguments);
   }));
   var build_illuminator = ($traceurRuntime.initTailRecursiveFunction(function(conf) {
@@ -667,12 +770,12 @@ System.registerModule("../src/scene_builder.js", [], function(require) {
   }));
   var build_camera = ($traceurRuntime.initTailRecursiveFunction(function(conf) {
     return $traceurRuntime.call(function(conf) {
-      return ($__23 = extract(conf, {
+      return ($__26 = extract(conf, {
         origin: build_vector,
         look_at: build_vector,
         focus: null,
         screen: null
-      }), $traceurRuntime.continuation($__23.then, $__23, [Camera]));
+      }), $traceurRuntime.continuation($__26.then, $__26, [Camera]));
     }, this, arguments);
   }));
   var build_color = ($traceurRuntime.initTailRecursiveFunction(function(conf) {
@@ -684,6 +787,9 @@ System.registerModule("../src/scene_builder.js", [], function(require) {
       }
     }, this, arguments);
   }));
+  var build_material = (function(conf) {
+    return materials[$traceurRuntime.toProperty(conf)];
+  });
   var is_string = (function(s) {
     return typeof s === 'string' || s instanceof String;
   });
@@ -692,13 +798,13 @@ System.registerModule("../src/scene_builder.js", [], function(require) {
       return $traceurRuntime.continuation(Vector.apply, Vector, [(void 0), $traceurRuntime.spread(conf)]);
     }, this, arguments);
   }));
-  return ($__8 = {}, Object.defineProperty($__8, "build_from_json", {
+  return ($__10 = {}, Object.defineProperty($__10, "build_from_json", {
     get: function() {
       return build_from_json;
     },
     configurable: true,
     enumerable: true
-  }), $__8);
+  }), $__10);
 });
 $traceurRuntime.options.symbols = true;
 System.registerModule("../src/screen.js", [], function(require) {
@@ -743,6 +849,7 @@ System.registerModule("../src/main.js", [], function(require) {
   var build_from_json = System.get("../src/scene_builder.js").build_from_json;
   var default_config = {
     resolution: [64 * 10, 48 * 10],
+    upsampling: 2,
     camera: {
       origin: [10, 0, 1.5],
       look_at: [0, 0, 1.5],
@@ -754,29 +861,33 @@ System.registerModule("../src/main.js", [], function(require) {
       type: "sphere",
       origin: [0, 0, 1],
       radius: 1,
-      color: "red"
+      color: "green",
+      material: "plastic"
     }, {
       type: "sphere",
-      origin: [-2, 1, 3],
-      radius: 1.5,
-      color: "green"
+      origin: [0, 2, 1],
+      radius: 1,
+      color: "white",
+      material: "metal"
     }, {
       type: "plain",
       origin: [0, 0, 0],
       dx: [1, 0, 0],
       dy: [0, 1, 0],
-      colorx: "black",
-      colory: "white"
+      colorx: "blue",
+      colory: "white",
+      material: "plastic"
     }],
     illuminators: [{
-      origin: [1, -2, 2],
+      origin: [1, 1, 3],
       color: "white"
     }]
   };
   var ui = {
     canvas: null,
     start_button: null,
-    description: null
+    description: null,
+    spf_counter: null
   };
   var init_ui = (function() {
     window.ui = ui;
@@ -785,6 +896,7 @@ System.registerModule("../src/main.js", [], function(require) {
     ui.description = $('.scene-description');
     ui.description.val(JSON.stringify(default_config, null, 4));
     ui.start_button.on('click', on_start_button);
+    ui.spf_counter = $('.spf');
   });
   var on_start_button = (function() {
     var $__6,
@@ -804,6 +916,7 @@ System.registerModule("../src/main.js", [], function(require) {
     if (!ok) {
       alert(message);
     } else {
+      ui.spf_counter.text("");
       var $__5 = scene.resolution,
           width = ($__6 = $__5[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__7 = $__6.next()).done ? void 0 : $__7.value),
           height = ($__7 = $__6.next()).done ? void 0 : $__7.value;
@@ -825,32 +938,38 @@ System.registerModule("../src/main.js", [], function(require) {
         $__8;
     var n_done = 0;
     var on_message = (function(e) {
-      var $__6,
-          $__7,
-          $__9,
-          $__10,
-          $__12,
-          $__13;
       if (e.data === "Done!") {
         n_done++;
         if (n_done === n_workers) {
           var end_time = performance.now();
           console.log("...done!");
-          console.log((end_time - start_time) / 1000, 'seconds');
+          var seconds = ((end_time - start_time) / 1000).toFixed(2);
+          console.log(seconds, 'seconds');
+          ui.spf_counter.text("SPF: " + seconds);
         }
         return ;
       }
-      var $__5 = e.data,
-          $__8 = ($__6 = $__5[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__7 = $__6.next()).done ? void 0 : $__7.value),
-          x = ($__9 = $__8[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__10 = $__9.next()).done ? void 0 : $__10.value),
-          y = ($__10 = $__9.next()).done ? void 0 : $__10.value,
-          $__11 = ($__7 = $__6.next()).done ? void 0 : $__7.value,
-          r = ($__12 = $__11[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__13 = $__12.next()).done ? void 0 : $__13.value),
-          g = ($__13 = $__12.next()).done ? void 0 : $__13.value,
-          b = ($__13 = $__12.next()).done ? void 0 : $__13.value;
-      screen.put_pixel(x, y, Color(r, g, b));
+      e.data.forEach(($traceurRuntime.initTailRecursiveFunction(function($__4) {
+        return $traceurRuntime.call(function($__4) {
+          var $__6,
+              $__7,
+              $__9,
+              $__10,
+              $__12,
+              $__13;
+          var $__5 = $__4,
+              $__8 = ($__6 = $__5[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__7 = $__6.next()).done ? void 0 : $__7.value),
+              x = ($__9 = $__8[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__10 = $__9.next()).done ? void 0 : $__10.value),
+              y = ($__10 = $__9.next()).done ? void 0 : $__10.value,
+              $__11 = ($__7 = $__6.next()).done ? void 0 : $__7.value,
+              r = ($__12 = $__11[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__13 = $__12.next()).done ? void 0 : $__13.value),
+              g = ($__13 = $__12.next()).done ? void 0 : $__13.value,
+              b = ($__13 = $__12.next()).done ? void 0 : $__13.value;
+          return $traceurRuntime.continuation(screen.put_pixel, screen, [x, y, Color(r, g, b)]);
+        }, this, arguments);
+      })));
     });
-    var n_workers = 8;
+    var n_workers = 4;
     var $__4 = screen.resolution,
         width = ($__5 = $__4[$traceurRuntime.toProperty($traceurRuntime.toProperty(Symbol.iterator))](), ($__8 = $__5.next()).done ? void 0 : $__8.value),
         height = ($__8 = $__5.next()).done ? void 0 : $__8.value;

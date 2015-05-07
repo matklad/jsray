@@ -1,2 +1,3 @@
 jquery https://jquery.com/
 google traceur https://github.com/google/traceur-compiler/wiki/Getting-Started
+background image from http://subtlepatterns.com/

@@ -1,4 +1,4 @@
-import {colors} from './color.js'
+import {colors, Color} from './color.js'
 import {Ray} from './ray.js'
 
 export const Scene = ({camera,
@@ -6,7 +6,8 @@ export const Scene = ({camera,
                        items,
                        ambient,
                        illuminators,
-                       background_color=colors.black}) => {
+                       background_color=colors.black,
+                       upsampling=1}) => {
     const _find_intersection = (ray) => {
       const f = (acc, item) => {
         const t = item.intersect(ray)
@@ -28,7 +29,7 @@ export const Scene = ({camera,
           const diffuse_light = illuminator.color.set_bright(diffuse_bright)
 
           const reflected_dir = normal.scale(2 * light_dir.dot(normal)).sub(light_dir)
-          const reflected_bright = Math.pow(reflected_dir.dot(viewer_dir), 2)
+          const reflected_bright = Math.pow(reflected_dir.dot(viewer_dir), item.material.alpha)
           const reflected_light = illuminator.color.set_bright(reflected_bright)
 
           const item_color = item.color_at(pos)
@@ -41,10 +42,10 @@ export const Scene = ({camera,
       return illuminators.reduce(f, init_color)
     }
 
-    const _reflect_ray = (ray, intersect, normal) => {
+    const _reflect_ray = (ray, point, normal) => {
       const dir = ray.direction
       const reflected_dir = dir.sub(normal.scale(2 * dir.dot(normal)))
-      return Ray(intersect.add(reflected_dir.scale(1e-4)), reflected_dir)
+      return Ray(point.add(reflected_dir.scale(1e-4)), reflected_dir)
     }
 
     const _run_ray = (ray) => {
@@ -54,31 +55,41 @@ export const Scene = ({camera,
         const normal = item.normal_at(intersect)
         const color = _item_lighted_at(item, intersect, ray.direction.scale(-1))
         const reflected = _reflect_ray(ray, intersect, normal)
-        return {color, reflected}
+        return {color, material: item.material, reflected}
       } else {
-        return {color: null, reflected: null}
+        return {color: null, material: null, reflected: null}
       }
     }
+
+   const _color_at = (x, y) => {
+     const [res_x, res_y] = resolution.map((x) => x * upsampling)
+     const dx = (2 * x - res_x) / res_x
+     const dy = (2 * y - res_y) / res_y
+
+     const ray = camera.cast_ray(dx, dy)
+     const {color, material, reflected} = _run_ray(ray)
+     if (color) {
+       const {color: mirrored_color, _m, _r} = _run_ray(reflected)
+       if (mirrored_color) {
+         return color.mix_with(mirrored_color.set_bright(material.mirroring))
+       }
+       return color
+     }
+
+     return background_color
+   }
 
   return {
     resolution: resolution,
 
     color_at: (x, y) => {
-      const [res_x, res_y] = resolution
-      const dx = (2 * x - res_x) / res_x
-      const dy = (2 * y - res_y) / res_y
-
-      const ray = camera.cast_ray(dx, dy)
-      const {color, reflected} = _run_ray(ray)
-      if (color) {
-        const {color: mirrored_color, _} = _run_ray(reflected)
-        if (mirrored_color) {
-          return color.mix_with(mirrored_color.set_bright(0.3))
-        }
-        return color
+      let c = Color(0, 0, 0)
+      for (let i = 0; i < upsampling; i++) {
+        for (let j = 0; j < upsampling; j++)
+          c = c.mix_with(_color_at(upsampling * x + i, upsampling * y + j)
+                         .set_bright(1 / (upsampling * upsampling)))
       }
-
-      return background_color
+      return c
     }
 
   }

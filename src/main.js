@@ -6,6 +6,7 @@ import {build_from_json} from './scene_builder.js'
 const default_config =  {
   resolution: [64 * 10,
                48 * 10],
+  upsampling: 2,
   camera: {
     origin: [10, 0, 1.5],
     look_at: [0, 0, 1.5],
@@ -14,20 +15,22 @@ const default_config =  {
   },
   ambient: [0.2, 0.2, 0.2],
   items: [
-    {type: "sphere", origin: [0, 0, 1], radius: 1, color: "red"},
-    {type: "sphere", origin: [-2, 1, 3], radius: 1.5, color: "green"},
+    {type: "sphere", origin: [0, 0, 1], radius: 1, color: "green", material: "plastic"},
+    {type: "sphere", origin: [0, 2, 1], radius: 1, color: "white", material: "metal"},
     {type: "plain", origin: [0, 0, 0], dx: [1, 0, 0], dy: [0, 1, 0],
-     colorx: "black", colory: "white"}
+     colorx: "blue", colory: "white", material: "plastic"}
   ],
   illuminators: [
-    {origin: [1, -2, 2], color: "white"}
+    {origin: [1, 1, 3], color: "white"}
   ]
 }
 
 const ui = {
   canvas: null,
   start_button: null,
-  description: null
+  description: null,
+  spf_counter: null
+
 }
 
 const init_ui = () => {
@@ -37,6 +40,7 @@ const init_ui = () => {
   ui.description = $('.scene-description')
   ui.description.val(JSON.stringify(default_config, null, 4))
   ui.start_button.on('click', on_start_button)
+  ui.spf_counter = $('.spf')
 }
 
 const on_start_button = () => {
@@ -52,6 +56,7 @@ const on_start_button = () => {
   if (!ok) {
     alert(message)
   } else {
+    ui.spf_counter.text("")
     const [width, height] = scene.resolution
     ui.canvas.width(width)
     ui.canvas.height(height)
@@ -74,15 +79,18 @@ const render_scene = (json, screen) => {
       if (n_done === n_workers) {
         const end_time = performance.now();
         console.log("...done!")
-        console.log((end_time - start_time) / 1000, 'seconds')
+        const seconds = ((end_time - start_time) / 1000).toFixed(2)
+        console.log(seconds, 'seconds')
+        ui.spf_counter.text("SPF: " + seconds)
       }
+
       return
     }
-    const {data: [[x, y], [r, g, b]]} = e
-    screen.put_pixel(x, y, Color(r, g, b))
+    e.data.forEach(([[x, y], [r, g, b]]) =>
+                   screen.put_pixel(x, y, Color(r, g, b)))
   }
 
-  const n_workers = 8
+  const n_workers = 4
   const [width, height] = screen.resolution
   const block = Math.floor(width / n_workers)
 

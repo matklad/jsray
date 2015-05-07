@@ -113,14 +113,17 @@ System.registerModule("../src/color.js", [], function() {
   "use strict";
   var __moduleName = "../src/color.js";
   var Color = (function(r, g, b) {
+    var f = (function(alpha) {
+      return Math.min(Math.round((alpha * 255)), 255);
+    });
     return {
       r: r,
       g: g,
       b: b,
+      as_uint8: (function() {
+        return [f(r), f(g), f(b)];
+      }),
       as_rgba_str: (function() {
-        var f = (function(alpha) {
-          return Math.min(Math.round((alpha * 255)), 255);
-        });
         return "rgba(" + f(r) + "," + f(g) + "," + f(b) + "," + 255 + ")";
       }),
       under_light: (function(light) {
@@ -164,12 +167,31 @@ System.registerModule("../src/illuminator.js", [], function() {
       return Illuminator;
     }};
 });
+System.registerModule("../src/material.js", [], function() {
+  "use strict";
+  var __moduleName = "../src/material.js";
+  var Material = (function(shine, mirroring) {
+    return {
+      alpha: Math.round(Math.pow(10, (1 - shine) * 5)),
+      mirroring: mirroring
+    };
+  });
+  var materials = {
+    metal: Material(0.8, 0.2),
+    plastic: Material(0.01, 0.01),
+    mirror: Material(0.7, 0.9)
+  };
+  return {get materials() {
+      return materials;
+    }};
+});
 System.registerModule("../src/plain.js", [], function() {
   "use strict";
   var __moduleName = "../src/plain.js";
-  var Plain = (function(origin, dx, dy, color_a, color_b) {
+  var Plain = (function(origin, dx, dy, color_a, color_b, material) {
     var normal = dx.cross(dy).direction();
     return {
+      material: material,
       intersect: (function(ray) {
         var $__0 = ray,
             ro = $__0.origin,
@@ -253,17 +275,21 @@ System.registerModule("../src/result.js", [], function() {
 System.registerModule("../src/scene.js", [], function() {
   "use strict";
   var __moduleName = "../src/scene.js";
-  var colors = System.get("../src/color.js").colors;
+  var $__0 = System.get("../src/color.js"),
+      colors = $__0.colors,
+      Color = $__0.Color;
   var Ray = System.get("../src/ray.js").Ray;
   var Scene = (function($__2) {
-    var $__4;
+    var $__4,
+        $__5;
     var $__3 = $__2,
         camera = $__3.camera,
         resolution = $__3.resolution,
         items = $__3.items,
         ambient = $__3.ambient,
         illuminators = $__3.illuminators,
-        background_color = ($__4 = $__3.background_color) === void 0 ? colors.black : $__4;
+        background_color = ($__4 = $__3.background_color) === void 0 ? colors.black : $__4,
+        upsampling = ($__5 = $__3.upsampling) === void 0 ? 1 : $__5;
     var _find_intersection = (function(ray) {
       var f = (function(acc, item) {
         var t = item.intersect(ray);
@@ -288,7 +314,7 @@ System.registerModule("../src/scene.js", [], function() {
           var diffuse_bright = normal.dot(light_dir);
           var diffuse_light = illuminator.color.set_bright(diffuse_bright);
           var reflected_dir = normal.scale(2 * light_dir.dot(normal)).sub(light_dir);
-          var reflected_bright = Math.pow(reflected_dir.dot(viewer_dir), 2);
+          var reflected_bright = Math.pow(reflected_dir.dot(viewer_dir), item.material.alpha);
           var reflected_light = illuminator.color.set_bright(reflected_bright);
           var item_color = item.color_at(pos);
           var with_diffuse = color.mix_with(item_color.under_light(diffuse_light));
@@ -299,15 +325,15 @@ System.registerModule("../src/scene.js", [], function() {
       var init_color = item.color_at(pos).under_light(ambient);
       return illuminators.reduce(f, init_color);
     });
-    var _reflect_ray = (function(ray, intersect, normal) {
+    var _reflect_ray = (function(ray, point, normal) {
       var dir = ray.direction;
       var reflected_dir = dir.sub(normal.scale(2 * dir.dot(normal)));
-      return Ray(intersect.add(reflected_dir.scale(1e-4)), reflected_dir);
+      return Ray(point.add(reflected_dir.scale(1e-4)), reflected_dir);
     });
     var _run_ray = (function(ray) {
-      var $__5 = _find_intersection(ray),
-          t = $__5.t,
-          item = $__5.item;
+      var $__6 = _find_intersection(ray),
+          t = $__6.t,
+          item = $__6.item;
       if (item) {
         var intersect = ray.point_along(t);
         var normal = item.normal_at(intersect);
@@ -315,39 +341,53 @@ System.registerModule("../src/scene.js", [], function() {
         var reflected = _reflect_ray(ray, intersect, normal);
         return {
           color: color,
+          material: item.material,
           reflected: reflected
         };
       } else {
         return {
           color: null,
+          material: null,
           reflected: null
         };
       }
     });
+    var _color_at = (function(x, y) {
+      var $__7,
+          $__8;
+      var $__6 = resolution.map((function(x) {
+        return x * upsampling;
+      })),
+          res_x = ($__7 = $__6[$traceurRuntime.toProperty(Symbol.iterator)](), ($__8 = $__7.next()).done ? void 0 : $__8.value),
+          res_y = ($__8 = $__7.next()).done ? void 0 : $__8.value;
+      var dx = (2 * x - res_x) / res_x;
+      var dy = (2 * y - res_y) / res_y;
+      var ray = camera.cast_ray(dx, dy);
+      var $__9 = _run_ray(ray),
+          color = $__9.color,
+          material = $__9.material,
+          reflected = $__9.reflected;
+      if (color) {
+        var $__10 = _run_ray(reflected),
+            mirrored_color = $__10.color,
+            _m = $__10._m,
+            _r = $__10._r;
+        if (mirrored_color) {
+          return color.mix_with(mirrored_color.set_bright(material.mirroring));
+        }
+        return color;
+      }
+      return background_color;
+    });
     return {
       resolution: resolution,
       color_at: (function(x, y) {
-        var $__6,
-            $__7;
-        var $__5 = resolution,
-            res_x = ($__6 = $__5[$traceurRuntime.toProperty(Symbol.iterator)](), ($__7 = $__6.next()).done ? void 0 : $__7.value),
-            res_y = ($__7 = $__6.next()).done ? void 0 : $__7.value;
-        var dx = (2 * x - res_x) / res_x;
-        var dy = (2 * y - res_y) / res_y;
-        var ray = camera.cast_ray(dx, dy);
-        var $__8 = _run_ray(ray),
-            color = $__8.color,
-            reflected = $__8.reflected;
-        if (color) {
-          var $__9 = _run_ray(reflected),
-              mirrored_color = $__9.color,
-              _ = $__9._;
-          if (mirrored_color) {
-            return color.mix_with(mirrored_color.set_bright(0.3));
-          }
-          return color;
+        var c = Color(0, 0, 0);
+        for (var i = 0; i < upsampling; i++) {
+          for (var j = 0; j < upsampling; j++)
+            c = c.mix_with(_color_at(upsampling * x + i, upsampling * y + j).set_bright(1 / (upsampling * upsampling)));
         }
-        return background_color;
+        return c;
       })
     };
   });
@@ -385,10 +425,11 @@ System.registerModule("../src/sphere.js", [], function() {
       Ray = $__1.Ray,
       ray_from_to = $__1.ray_from_to;
   var solve_square_equation = System.get("../src/utils.js").solve_square_equation;
-  var Sphere = (function(center, radius, color) {
+  var Sphere = (function(center, radius, color, material) {
     return {
       center: center,
       radius: radius,
+      material: material,
       intersect: (function(ray) {
         var $__4;
         var $__3 = ray,
@@ -432,15 +473,57 @@ System.registerModule("../src/sphere.js", [], function() {
       return Sphere;
     }};
 });
+System.registerModule("../src/triangle.js", [], function() {
+  "use strict";
+  var __moduleName = "../src/triangle.js";
+  var Triangle = (function(a, b, c, color, material) {
+    var ab = b.sub(a);
+    var bc = c.sub(b);
+    var ca = a.sub(c);
+    var normal = c.sub(a).cross(b.sub(a)).direction();
+    return {
+      a: a,
+      b: b,
+      c: c,
+      material: material,
+      intersect: (function(ray) {
+        var $__0 = ray,
+            ro = $__0.origin,
+            rd = $__0.direction;
+        var t = (a.sub(ro)).dot(normal) / rd.dot(normal);
+        if (t < 0) {
+          return -1;
+        }
+        var pint = ray.point_along(t);
+        var eps = 1e-4;
+        if (pint.sub(a).cross(ab).dot(normal) >= eps && pint.sub(b).cross(bc).dot(normal) >= eps && pint.sub(c).cross(ca).dot(normal) >= eps) {
+          return t;
+        }
+        return -1;
+      }),
+      normal_at: (function(point) {
+        return normal;
+      }),
+      color_at: (function(point) {
+        return color;
+      })
+    };
+  });
+  return {get Triangle() {
+      return Triangle;
+    }};
+});
 System.registerModule("../src/scene_builder.js", [], function() {
   "use strict";
   var __moduleName = "../src/scene_builder.js";
   var Plain = System.get("../src/plain.js").Plain;
   var Sphere = System.get("../src/sphere.js").Sphere;
+  var Triangle = System.get("../src/triangle.js").Triangle;
   var Vector = System.get("../src/vector.js").Vector;
-  var $__3 = System.get("../src/color.js"),
-      Color = $__3.Color,
-      colors = $__3.colors;
+  var $__4 = System.get("../src/color.js"),
+      Color = $__4.Color,
+      colors = $__4.colors;
+  var materials = System.get("../src/material.js").materials;
   var Result = System.get("../src/result.js").Result;
   var Scene = System.get("../src/scene.js").Scene;
   var Camera = System.get("../src/camera.js").Camera;
@@ -451,7 +534,8 @@ System.registerModule("../src/scene_builder.js", [], function() {
       items: [build_item],
       illuminators: [build_illuminator],
       resolution: null,
-      ambient: build_color
+      ambient: build_color,
+      upsampling: null
     }).then(Scene);
   });
   var extract = (function(obj, fs) {
@@ -480,12 +564,12 @@ System.registerModule("../src/scene_builder.js", [], function() {
     });
     var tmp = Object.keys(fs).map(get_key);
     return Result.all(Object.keys(fs).map(get_key)).then((function(props) {
-      return props.reduce(((function(acc, $__8) {
-        var $__10,
-            $__11;
-        var $__9 = $__8,
-            key = ($__10 = $__9[$traceurRuntime.toProperty(Symbol.iterator)](), ($__11 = $__10.next()).done ? void 0 : $__11.value),
-            value = ($__11 = $__10.next()).done ? void 0 : $__11.value;
+      return props.reduce(((function(acc, $__10) {
+        var $__12,
+            $__13;
+        var $__11 = $__10,
+            key = ($__12 = $__11[$traceurRuntime.toProperty(Symbol.iterator)](), ($__13 = $__12.next()).done ? void 0 : $__13.value),
+            value = ($__13 = $__12.next()).done ? void 0 : $__13.value;
         acc[key] = value;
         return acc;
       })), {});
@@ -504,16 +588,21 @@ System.registerModule("../src/scene_builder.js", [], function() {
           return build_sphere(conf);
         case "plain":
           return build_plain(conf);
+        case "triangle":
+          return build_triangle(conf);
         default:
           return Result.Fail("unknown item type " + type);
       }
     }));
   });
   var build_sphere = (function(conf) {
-    return Sphere(build_vector(conf.origin), conf.radius, build_color(conf.color));
+    return Sphere(build_vector(conf.origin), conf.radius, build_color(conf.color), build_material(conf.material));
   });
   var build_plain = (function(conf) {
-    return Plain(build_vector(conf.origin), build_vector(conf.dx), build_vector(conf.dy), build_color(conf.colorx), build_color(conf.colory));
+    return Plain(build_vector(conf.origin), build_vector(conf.dx), build_vector(conf.dy), build_color(conf.colorx), build_color(conf.colory), build_material(conf.material));
+  });
+  var build_triangle = (function(conf) {
+    return Triangle(build_vector(conf.a), build_vector(conf.b), build_vector(conf.c), build_color(conf.color), build_material(conf.material));
   });
   var build_illuminator = (function(conf) {
     return Illuminator(build_vector(conf.origin), build_color(conf.color));
@@ -532,6 +621,9 @@ System.registerModule("../src/scene_builder.js", [], function() {
     } else {
       return Color.apply((void 0), $traceurRuntime.spread(conf));
     }
+  });
+  var build_material = (function(conf) {
+    return materials[conf];
   });
   var is_string = (function(s) {
     return typeof s === 'string' || s instanceof String;
@@ -555,10 +647,12 @@ System.registerModule("../src/worker.js", [], function() {
     var scene = build_from_json(json).result;
     var start_time = performance.now();
     for (var x = x_range[0]; x < x_range[1]; x++) {
+      var result = [];
       for (var y = y_range[0]; y < y_range[1]; y++) {
         var c = scene.color_at(x, y);
-        postMessage([[x, y], [c.r, c.g, c.b]]);
+        result.push([[x, y], [c.r, c.g, c.b]]);
       }
+      postMessage(result);
     }
     postMessage("Done!");
     close();
