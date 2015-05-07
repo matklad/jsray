@@ -15,10 +15,36 @@ const default_config =  {
   },
   ambient: [0.2, 0.2, 0.2],
   items: [
-    {type: "sphere", origin: [0, 0, 1], radius: 1, color: "green", material: "plastic"},
-    {type: "sphere", origin: [0, 2, 1], radius: 1, color: "white", material: "metal"},
-    {type: "plain", origin: [0, 0, 0], dx: [1, 0, 0], dy: [0, 1, 0],
-     colorx: "blue", colory: "white", material: "plastic"}
+    {"type": "triangle",
+     "color": "black", "material": "mirror",
+     "b": [0, -4, 0],
+     "a": [-4, 0, 0],
+     "c": [0, -2, 3]
+    },
+    {
+      "type": "sphere",
+      "origin": [ 0, 0, 1 ],
+      "radius": 1,
+      "color": "green",
+      "material": "plastic"
+    },
+    {
+      "type": "sphere",
+      "origin": [ 0, 2, 1 ],
+      "radius": 1,
+      "color": "white",
+      "material": "metal"
+    },
+    {
+      "type": "plain",
+      "origin": [ 0, 0, 0 ],
+      "dx": [ 1, 0, 0 ],
+      "dy": [ 0, 1, 0 ],
+      "colorx": "blue",
+      "colory": "white",
+      "material": "plastic"
+    }
+
   ],
   illuminators: [
     {origin: [1, 1, 3], color: "white"}
