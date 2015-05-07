@@ -6,6 +6,7 @@ import {build_from_json} from './scene_builder.js'
 const default_config =  {
   resolution: [64 * 10,
                48 * 10],
+  upsampling: 2,
   camera: {
     origin: [10, 0, 1.5],
     look_at: [0, 0, 1.5],
