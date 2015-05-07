@@ -32,3 +32,13 @@
 .start-button {
   margin-bottom: 10px;
 }
+
+.manual-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.manual {
+  width: 80%;
+}
