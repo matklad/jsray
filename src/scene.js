@@ -28,7 +28,7 @@ export const Scene = ({camera,
           const diffuse_light = illuminator.color.set_bright(diffuse_bright)
 
           const reflected_dir = normal.scale(2 * light_dir.dot(normal)).sub(light_dir)
-          const reflected_bright = Math.pow(reflected_dir.dot(viewer_dir), 2)
+          const reflected_bright = Math.pow(reflected_dir.dot(viewer_dir), item.material.alpha)
           const reflected_light = illuminator.color.set_bright(reflected_bright)
 
           const item_color = item.color_at(pos)
@@ -54,9 +54,9 @@ export const Scene = ({camera,
         const normal = item.normal_at(intersect)
         const color = _item_lighted_at(item, intersect, ray.direction.scale(-1))
         const reflected = _reflect_ray(ray, intersect, normal)
-        return {color, reflected}
+        return {color, material: item.material, reflected}
       } else {
-        return {color: null, reflected: null}
+        return {color: null, matherial: null, reflected: null}
       }
     }
 
@@ -69,11 +69,11 @@ export const Scene = ({camera,
       const dy = (2 * y - res_y) / res_y
 
       const ray = camera.cast_ray(dx, dy)
-      const {color, reflected} = _run_ray(ray)
+      const {color, material, reflected} = _run_ray(ray)
       if (color) {
-        const {color: mirrored_color, _} = _run_ray(reflected)
+        const {color: mirrored_color, _m, _r} = _run_ray(reflected)
         if (mirrored_color) {
-          return color.mix_with(mirrored_color.set_bright(0.3))
+          return color.mix_with(mirrored_color.set_bright(material.mirroring))
         }
         return color
       }

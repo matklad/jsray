@@ -14,13 +14,13 @@ const default_config =  {
   },
   ambient: [0.2, 0.2, 0.2],
   items: [
-    {type: "sphere", origin: [0, 0, 1], radius: 1, color: "red"},
-    {type: "triangle", a: [-2, -1, 0], b: [0, 0, 2], c: [2, 1, 0], color: "green"},
+    {type: "sphere", origin: [0, 0, 1], radius: 1, color: "red", material: "plastic"},
+    {type: "sphere", origin: [0, 2, 1], radius: 1, color: "red", material: "metal"},
     {type: "plain", origin: [0, 0, 0], dx: [1, 0, 0], dy: [0, 1, 0],
-     colorx: "blue", colory: "white"}
+     colorx: "blue", colory: "white", material: "plastic"}
   ],
   illuminators: [
-    {origin: [1, -2, 2], color: "white"}
+    {origin: [1, 1, 3], color: "white"}
   ]
 }
 

@@ -1,4 +1,4 @@
-export const Triangle = (a, b, c, color) => {
+export const Triangle = (a, b, c, color, material) => {
   const ab = b.sub(a)
   const bc = c.sub(b)
   const ca = a.sub(c)
@@ -9,6 +9,7 @@ export const Triangle = (a, b, c, color) => {
     a: a,
     b: b,
     c: c,
+    material: material,
 
     intersect: (ray) => {
       const {origin: ro, direction: rd} = ray

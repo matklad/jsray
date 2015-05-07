@@ -3,6 +3,7 @@ import {Sphere} from './sphere.js'
 import {Triangle} from './triangle.js'
 import {Vector} from './vector.js'
 import {Color, colors} from './color.js'
+import {materials} from './material.js'
 import {Result} from './result.js'
 import {Scene} from './scene.js'
 import {Camera} from './camera.js'
@@ -70,20 +71,23 @@ const build_item = (conf) =>
 
 
 const build_sphere = (conf) => Sphere(
-  build_vector(conf.origin), conf.radius, build_color(conf.color)
+  build_vector(conf.origin), conf.radius, build_color(conf.color),
+  build_material(conf.material)
 )
 
 
 const build_plain = (conf) => Plain(
   build_vector(conf.origin), build_vector(conf.dx), build_vector(conf.dy),
-  build_color(conf.colorx), build_color(conf.colory)
+  build_color(conf.colorx), build_color(conf.colory),
+  build_material(conf.material)
 )
 
 const build_triangle = (conf) => Triangle(
   build_vector(conf.a),
   build_vector(conf.b),
   build_vector(conf.c),
-  build_color(conf.color)
+  build_color(conf.color),
+  build_material(conf.material)
 )
 
 const build_illuminator = (conf) => Illuminator(
@@ -108,6 +112,9 @@ const build_color = (conf) => {
   }
 }
 
+const build_material = (conf) => {
+  return materials[conf]
+}
 
 const is_string = (s) =>
         typeof s === 'string' || s instanceof String
