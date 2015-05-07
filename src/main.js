@@ -26,7 +26,9 @@ const default_config =  {
 const ui = {
   canvas: null,
   start_button: null,
-  description: null
+  description: null,
+  spf_counter: null
+
 }
 
 const init_ui = () => {
@@ -36,6 +38,7 @@ const init_ui = () => {
   ui.description = $('.scene-description')
   ui.description.val(JSON.stringify(default_config, null, 4))
   ui.start_button.on('click', on_start_button)
+  ui.spf_counter = $('.spf')
 }
 
 const on_start_button = () => {
@@ -51,6 +54,7 @@ const on_start_button = () => {
   if (!ok) {
     alert(message)
   } else {
+    ui.spf_counter.text("")
     const [width, height] = scene.resolution
     ui.canvas.width(width)
     ui.canvas.height(height)
@@ -75,7 +79,7 @@ const render_scene = (json, screen) => {
         console.log("...done!")
         const seconds = ((end_time - start_time) / 1000).toFixed(2)
         console.log(seconds, 'seconds')
-        $('.spf').text(seconds)
+        ui.spf_counter.text("SPF: " + seconds)
       }
 
       return
